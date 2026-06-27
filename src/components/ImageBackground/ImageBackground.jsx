@@ -26,7 +26,7 @@ export default function ImageBackground({ children }) {
   }, [])
 
   return (
-    <section className="relative w-full aspect-[16/9] min-h-[300px] sm:min-h-[400px] lg:min-h-[560px] overflow-hidden flex items-center justify-center">
+    <section className="relative w-full min-h-[280px] sm:min-h-[380px] lg:min-h-[560px] overflow-hidden flex items-center justify-center">
       {/* Carrossel — proporção 16:9 igual às fotos, evitando cortes */}
       <div className="absolute inset-0">
         {images.map((src, i) => (

@@ -23,7 +23,7 @@ export default function VideoBackground({ children }) {
   }, [current, hasVideo])
 
   return (
-    <div className="relative w-full aspect-[16/9] min-h-[300px] sm:min-h-[450px] lg:min-h-[600px] overflow-hidden flex items-center">
+    <div className="relative w-full min-h-[280px] sm:min-h-[400px] lg:min-h-[600px] overflow-hidden flex items-center">
 
       {/* ── Mídia de fundo ── */}
       {hasVideo ? (
