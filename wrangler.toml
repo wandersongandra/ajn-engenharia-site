@@ -1,0 +1,5 @@
+name = "ajn-engenharia"
+pages_build_output_dir = "dist"
+
+[env.production]
+name = "ajn-engenharia"
