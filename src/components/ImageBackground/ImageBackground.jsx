@@ -18,7 +18,7 @@ export default function ImageBackground() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % images.length)
-    }, 5000)
+    }, 8000) // sincronizado com a duração do Ken Burns (8s)
     return () => clearInterval(timer)
   }, [])
 

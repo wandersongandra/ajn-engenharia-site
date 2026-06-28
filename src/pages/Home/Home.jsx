@@ -64,46 +64,95 @@ export default function Home() {
       </VideoBackground>
 
       {/* ══════════════════════════════════════
-          QUEM SOMOS — fotos + texto centralizado
+          QUEM SOMOS — Premium v2
       ══════════════════════════════════════ */}
       <section className="relative py-20 lg:py-28 px-6 overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, #1a2e0a 0%, #2a3f12 55%, #44621f 100%)' }}>
-        {/* brilhos decorativos */}
-        <div className="absolute -top-20 -left-20 w-96 h-96 rounded-full bg-[#a4d65e]/8 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -right-16 w-80 h-80 rounded-full bg-black/20 blur-3xl pointer-events-none" />
+        style={{ background: 'linear-gradient(135deg, #0a1804 0%, #1a2e0a 50%, #2a4212 100%)' }}>
+        {/* Glow orbs — iluminação ambiente dramática */}
+        <div className="absolute top-0 right-0 w-[700px] h-[700px] rounded-full bg-[#a4d65e]/6 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-32 -left-32 w-[600px] h-[600px] rounded-full bg-[#4a9e10]/5 blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 opacity-[0.02] pointer-events-none"
+          style={{ backgroundImage: `radial-gradient(circle at 1px 1px, rgba(164,214,94,0.4) 1px, transparent 0)`, backgroundSize: '40px 40px' }} />
 
         <div className="relative max-w-6xl mx-auto grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
 
-          {/* Card de vidro (texto) */}
+          {/* Coluna de texto */}
           <Reveal>
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-7 sm:p-9 shadow-2xl">
-              <span className="inline-flex items-center gap-2 text-[#a4d65e] text-xs font-bold uppercase tracking-widest mb-4 bg-[#a4d65e]/15 px-4 py-2 rounded-full border border-[#a4d65e]/30">
+            <div className="bg-white/[0.05] border border-white/10 rounded-3xl p-8 sm:p-10 shadow-2xl">
+              <span className="inline-flex items-center gap-2 text-[#a4d65e] text-xs font-bold uppercase tracking-[0.25em] mb-5 bg-[#a4d65e]/10 px-4 py-2 rounded-full border border-[#a4d65e]/20 backdrop-blur-sm">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#a4d65e]" /> Quem Somos
               </span>
-              <h2 className="text-white text-3xl sm:text-4xl font-black mb-4 leading-tight">
+
+              {/* Value headline — propósito da empresa */}
+              <p className="text-white text-xl sm:text-2xl lg:text-3xl font-bold mb-2 leading-snug">
+                Engenharia que protege pessoas, operações e o meio ambiente.
+              </p>
+
+              {/* Brand name */}
+              <h2 className="text-white text-3xl sm:text-4xl lg:text-5xl font-black mb-2 leading-tight tracking-tight">
                 AJN Consultoria <span className="text-[#a4d65e]">e Engenharia</span>
               </h2>
+
+              <p className="text-[#a4d65e]/80 text-sm sm:text-base font-semibold mb-5">
+                {company.slogan}
+              </p>
+
               <div className="w-16 h-1 bg-gradient-to-r from-[#5cbf1a] to-[#a4d65e] rounded-full mb-6" />
-              <p className="text-white/85 text-sm sm:text-base leading-relaxed mb-5">
-                {company.description}
+
+              {/* Descrição — versão concisa (primeira frase) */}
+              <p className="text-white/80 text-sm sm:text-base leading-relaxed mb-6">
+                {company.description.split('.')[0]}.
               </p>
-              <p className="text-white/75 text-sm sm:text-base leading-relaxed mb-8">
-                Realizamos perícias de insalubridade e periculosidade, laudos técnicos (NR-12) e projetos de combate a incêndio (PPCI) com emissão de AVCB/CLCB junto ao Corpo de Bombeiros de MG.
-              </p>
+
+              {/* Stats / Indicadores de credibilidade */}
+              <div className="grid grid-cols-3 divide-x divide-white/10 bg-white/[0.04] rounded-2xl p-4 mb-7 border border-white/[0.03]">
+                {[
+                  { label: 'CREA',     sub: 'Registro Profissional Ativo' },
+                  { label: 'MG',       sub: 'Atendimento em Todo o Estado' },
+                  { label: 'QSSMA',    sub: 'Especialização Técnica Completa' },
+                ].map((stat) => (
+                  <div key={stat.label} className="text-center px-2">
+                    <p className="text-[#a4d65e] text-lg lg:text-xl font-black">{stat.label}</p>
+                    <p className="text-white/40 text-[11px] leading-tight mt-0.5 tracking-wide">{stat.sub}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Pilares de atuação */}
+              <div className="space-y-2.5 mb-7">
+                {[
+                  'Perícias de insalubridade, laudos NR-12 e projetos de combate a incêndio',
+                  'Emissão de AVCB/CLCB com engenheiros certificados e registrados no CREA',
+                  'Soluções completas em QSSMA com suporte técnico e acompanhamento contínuo',
+                ].map((item) => (
+                  <div key={item} className="flex items-start gap-3 text-white/70 text-sm leading-relaxed">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#a4d65e] mt-2 shrink-0" />
+                    {item}
+                  </div>
+                ))}
+              </div>
+
+              {/* CTA principal */}
               <Link
                 to="/servicos"
-                className="inline-flex items-center gap-2 text-white px-7 py-3.5 rounded-full font-bold text-sm transition-all hover:scale-105 hover:shadow-xl"
-                style={{ background: 'linear-gradient(135deg, #6aa521 0%, #3a7d0a 100%)' }}
+                className="group inline-flex items-center gap-2 bg-gradient-to-r from-[#6aa521] to-[#3a7d0a] text-white px-8 py-4 rounded-full font-bold text-sm transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-green-900/30 active:scale-100"
               >
-                Conheça nossos serviços <FaArrowRight size={13} />
+                Conheça nossas soluções
+                <FaArrowRight size={13} className="transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
             </div>
           </Reveal>
 
-          {/* Quadro de fotos alternando */}
+          {/* Coluna de imagem — carrossel com proporção editorial */}
           <Reveal delay={150}>
-            <div className="relative rounded-3xl overflow-hidden aspect-[4/3] shadow-2xl ring-1 ring-white/15">
+            <div className="relative rounded-3xl overflow-hidden aspect-[4/5] shadow-2xl ring-1 ring-white/15">
               <ImageBackground />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
+              {/* Badge flutuante */}
+              <div className="absolute top-5 left-5 z-10 inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-4 py-2.5">
+                <span className="w-2 h-2 rounded-full bg-[#a4d65e]" />
+                <span className="text-white text-[11px] font-bold tracking-wide">EQUIPE TÉCNICA CERTIFICADA</span>
+              </div>
             </div>
           </Reveal>
 
