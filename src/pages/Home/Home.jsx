@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import {
-  FaShieldAlt, FaLeaf, FaLightbulb, FaUsers,
+  FaShieldAlt, FaLeaf, FaMicrochip, FaHandshake,
+  FaBalanceScale, FaRocket,
   FaHardHat, FaBullseye, FaEye, FaGem, FaArrowRight,
   FaSearch, FaFileAlt, FaHeadset,
 } from 'react-icons/fa'
@@ -23,10 +24,12 @@ const taglines = [
 ]
 
 const differentials = [
-  { icon: FaShieldAlt, title: 'Equipe Qualificada',        desc: 'Profissionais experientes e certificados em todas as áreas de QSSMA.' },
-  { icon: FaLeaf,      title: 'Comprometimento Ambiental', desc: 'Práticas sustentáveis integradas a todas as nossas soluções.' },
-  { icon: FaLightbulb, title: 'Inovação Tecnológica',      desc: 'Uso de tecnologias avançadas para garantir eficiência e precisão.' },
-  { icon: FaUsers,     title: 'Atendimento Personalizado', desc: 'Envolvimento próximo com o cliente — cada projeto tratado com dedicação.' },
+  { icon: FaShieldAlt,   title: 'Expertise Técnica Certificada',     desc: 'Profissionais certificados com atuação comprovada em projetos de alta complexidade, garantindo conformidade total com as NRs e redução de riscos operacionais.' },
+  { icon: FaLeaf,        title: 'Gestão Ambiental Estratégica',      desc: 'Práticas sustentáveis integradas às soluções, reduzindo impactos ambientais e fortalecendo sua conformidade perante órgãos fiscalizadores.' },
+  { icon: FaMicrochip,   title: 'Inovação Tecnológica Aplicada',     desc: 'Ferramentas digitais e metodologias modernas que garantem diagnósticos precisos, laudos ágeis e eliminação de retrabalhos.' },
+  { icon: FaHandshake,   title: 'Atendimento Consultivo Premium',    desc: 'Engenheiros seniores dedicados que atuam como parceiros estratégicos, compreendendo as necessidades específicas do seu negócio.' },
+  { icon: FaBalanceScale,title: 'Conformidade Legal Garantida',      desc: 'Projetos e laudos 100% alinhados às NRs e legislação vigente, protegendo sua empresa contra passivos trabalhistas e autuações.' },
+  { icon: FaRocket,      title: 'Agilidade na Implantação',          desc: 'Processos otimizados e equipe mobilizada para entregar soluções completas no menor prazo, sem comprometer a qualidade técnica.' },
 ]
 
 const processSteps = [
@@ -242,36 +245,50 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════════════════
-          DIFERENCIAIS
+          DIFERENCIAIS — Premium
       ══════════════════════════════════════ */}
-      <section className="py-20 lg:py-28 px-6 bg-[#f5f7fa]">
-        <div className="max-w-6xl mx-auto">
-          <Reveal className="flex flex-col items-center text-center mb-14">
-            <span className="inline-flex items-center gap-2 text-[#3a7d0a] text-xs font-bold uppercase tracking-widest mb-5 bg-green-50 px-4 py-2 rounded-full border border-green-200">
+      <section className="relative py-20 lg:py-28 px-6 overflow-hidden bg-[#f6f8fa]">
+        {/* Background — luz ambiente sutil */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-[#4a9e10]/[0.03] blur-3xl" />
+          <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full bg-[#a4d65e]/[0.04] blur-3xl" />
+        </div>
+
+        <div className="relative max-w-6xl mx-auto">
+          <Reveal className="flex flex-col items-center text-center mb-14 lg:mb-16">
+            <span className="inline-flex items-center gap-2 text-[#3a7d0a] text-xs font-bold uppercase tracking-[0.25em] mb-5 bg-green-50/80 px-5 py-2.5 rounded-full border border-green-200/60 backdrop-blur-sm">
               <span className="w-1.5 h-1.5 rounded-full bg-[#4a9e10]" /> Por que nos escolher
             </span>
-            <h2 className="text-3xl md:text-4xl font-black text-[#1a2e0a] mb-4">Nossos Diferenciais</h2>
-            <div className="w-16 h-1 bg-gradient-to-r from-[#4a9e10] to-[#a4d65e] rounded-full" />
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-[#1a2e0a] mb-4 leading-tight tracking-tight">
+              Nossos Diferenciais
+            </h2>
+            <p className="text-gray-400 text-base md:text-lg max-w-2xl leading-relaxed">
+              Seis razões pelas quais empresas de todos os portes confiam na AJN.
+            </p>
+            <div className="w-16 h-1 bg-gradient-to-r from-[#4a9e10] to-[#a4d65e] rounded-full mt-6" />
           </Reveal>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-7">
             {differentials.map((d, i) => (
-              <Reveal key={d.title} delay={(i % 4) * 100}>
-                <div className="group relative h-full bg-white rounded-3xl p-7 border border-gray-100 hover:border-[#a4d65e] shadow-sm hover:shadow-2xl hover:shadow-green-900/10 hover:-translate-y-2 transition-all duration-300 text-center overflow-hidden">
-                  {/* barra de destaque no topo */}
-                  <span className="absolute top-0 left-1/2 -translate-x-1/2 h-1 w-10 bg-gradient-to-r from-[#4a9e10] to-[#a4d65e] rounded-b-full group-hover:w-full transition-all duration-500" />
-                  {/* número marca d'água */}
-                  <span className="absolute top-3 right-5 text-5xl font-black text-gray-50 group-hover:text-green-100 transition-colors select-none leading-none pointer-events-none">
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
+              <Reveal key={d.title} delay={(i % 6) * 80}>
+                <div className="group relative h-full bg-white rounded-2xl p-7 lg:p-8 border border-gray-100 shadow-sm hover:shadow-2xl hover:shadow-green-900/10 hover:-translate-y-1.5 transition-all duration-500 ease-out">
+                  {/* Barra lateral decorativa (hover) */}
+                  <span className="absolute left-0 top-3 bottom-3 w-[3px] bg-gradient-to-b from-[#4a9e10] to-[#a4d65e] rounded-r-full opacity-0 group-hover:opacity-100 transition-all duration-500" />
 
-                  <div className="relative w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-green-900/20 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300"
+                  {/* Ícone */}
+                  <div className="relative w-14 h-14 rounded-xl flex items-center justify-center mb-5 shadow-lg shadow-green-900/15 group-hover:shadow-green-900/25 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500"
                     style={{ background: 'linear-gradient(135deg, #6aa521 0%, #2d6208 100%)' }}>
-                    <d.icon className="text-white" size={26} />
-                    <span className="absolute inset-0 rounded-2xl ring-2 ring-[#a4d65e]/0 group-hover:ring-[#a4d65e]/50 group-hover:scale-125 transition-all duration-300" />
+                    <d.icon className="text-white" size={22} />
+                    <span className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/20" />
                   </div>
-                  <h3 className="relative text-[#1a2e0a] font-black text-lg mb-2">{d.title}</h3>
-                  <p className="relative text-gray-500 text-sm leading-relaxed">{d.desc}</p>
+
+                  {/* Conteúdo */}
+                  <h3 className="text-[#1a2e0a] font-black text-lg lg:text-xl mb-3 leading-snug group-hover:text-[#3a7d0a] transition-colors duration-300">
+                    {d.title}
+                  </h3>
+                  <p className="text-gray-500 text-sm leading-relaxed">
+                    {d.desc}
+                  </p>
                 </div>
               </Reveal>
             ))}
