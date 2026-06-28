@@ -1,9 +1,13 @@
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import {
   FaShieldAlt, FaLeaf, FaMicrochip, FaHandshake,
-  FaBalanceScale, FaRocket,
-  FaHardHat, FaBullseye, FaEye, FaGem, FaArrowRight,
-  FaSearch, FaFileAlt, FaHeadset,
+  FaBalanceScale, FaRocket, FaArrowRight, FaArrowUp,
+  FaHardHat, FaBullseye, FaEye, FaGem,
+  FaSearch, FaFileAlt, FaHeadset, FaWhatsapp,
+  FaCheckCircle, FaCertificate, FaMapMarkerAlt, FaTrophy,
+  FaUsers, FaCalendarAlt, FaSmile, FaBuilding,
+  FaPhone, FaPlay, FaQuoteLeft,
 } from 'react-icons/fa'
 import Typewriter from '../../components/Typewriter/Typewriter'
 import VideoBackground from '../../components/VideoBackground/VideoBackground'
@@ -11,10 +15,15 @@ import ImageBackground from '../../components/ImageBackground/ImageBackground'
 import Reveal from '../../components/Reveal/Reveal'
 import Faq from '../../components/Faq/Faq'
 
-import { company, clientLogos } from '../../data/company'
-import { services } from '../../data/services'
+import {
+  company, clientLogos, getWhatsappUrl, getBusinessStatus,
+  getOrganizationSchema, sanitizePhone,
+} from '../../data/company'
+import { services, getFeaturedServices } from '../../data/services'
 
-
+// ═══════════════════════════════════════════════════════════════════
+// CONSTANTES E DADOS
+// ═══════════════════════════════════════════════════════════════════
 
 const taglines = [
   'Especialistas em Engenharia de Segurança do Trabalho e QSSMA.',
@@ -23,168 +32,362 @@ const taglines = [
   'Soluções completas em segurança, meio ambiente e engenharia.',
 ]
 
-const differentials = [
-  { icon: FaShieldAlt,   title: 'Expertise Técnica Certificada',     desc: 'Profissionais certificados com atuação comprovada em projetos de alta complexidade, garantindo conformidade total com as NRs e redução de riscos operacionais.' },
-  { icon: FaLeaf,        title: 'Gestão Ambiental Estratégica',      desc: 'Práticas sustentáveis integradas às soluções, reduzindo impactos ambientais e fortalecendo sua conformidade perante órgãos fiscalizadores.' },
-  { icon: FaMicrochip,   title: 'Inovação Tecnológica Aplicada',     desc: 'Ferramentas digitais e metodologias modernas que garantem diagnósticos precisos, laudos ágeis e eliminação de retrabalhos.' },
-  { icon: FaHandshake,   title: 'Atendimento Consultivo Premium',    desc: 'Engenheiros seniores dedicados que atuam como parceiros estratégicos, compreendendo as necessidades específicas do seu negócio.' },
-  { icon: FaBalanceScale,title: 'Conformidade Legal Garantida',      desc: 'Projetos e laudos 100% alinhados às NRs e legislação vigente, protegendo sua empresa contra passivos trabalhistas e autuações.' },
-  { icon: FaRocket,      title: 'Agilidade na Implantação',          desc: 'Processos otimizados e equipe mobilizada para entregar soluções completas no menor prazo, sem comprometer a qualidade técnica.' },
-]
-
 const processSteps = [
-  { n: '01', icon: FaSearch,  title: 'Diagnóstico',      desc: 'Visitamos sua empresa, avaliamos os riscos e mapeamos as obrigações legais aplicáveis.' },
-  { n: '02', icon: FaFileAlt, title: 'Proposta',         desc: 'Apresentamos um plano sob medida, com escopo, prazos e valores claros — sem surpresas.' },
-  { n: '03', icon: FaHardHat, title: 'Execução',         desc: 'Implementamos programas, laudos, projetos e treinamentos com equipe técnica habilitada.' },
-  { n: '04', icon: FaHeadset, title: 'Acompanhamento',   desc: 'Monitoramos prazos, atualizamos documentos e damos suporte contínuo à sua equipe.' },
+  { n: '01', icon: FaSearch, title: 'Diagnóstico', desc: 'Visitamos sua empresa, avaliamos os riscos e mapeamos as obrigações legais aplicáveis.' },
+  { n: '02', icon: FaFileAlt, title: 'Proposta', desc: 'Apresentamos um plano sob medida, com escopo, prazos e valores claros — sem surpresas.' },
+  { n: '03', icon: FaHardHat, title: 'Execução', desc: 'Implementamos programas, laudos, projetos e treinamentos com equipe técnica habilitada.' },
+  { n: '04', icon: FaHeadset, title: 'Acompanhamento', desc: 'Monitoramos prazos, atualizamos documentos e damos suporte contínuo à sua equipe.' },
 ]
 
-// Cards de soluções — cada foto fica em public/images/servicos/{slug}.jpg
-const solutions = services.map((s) => ({
-  slug: s.slug,
-  title: s.shortTitle,
-  summary: s.summary,
-  image: `/images/servicos/${s.slug}.jpg`,
-}))
+// ═══════════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Hook para animação de contagem numérica (IntersectionObserver)
+ */
+function useCountUp(end, duration = 2000, startOnView = true) {
+  const [count, setCount] = useState(0)
+  const [hasStarted, setHasStarted] = useState(false)
+  const ref = useRef(null)
+
+  useEffect(() => {
+    if (!startOnView) {
+      setHasStarted(true)
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasStarted) {
+          setHasStarted(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.3 }
+    )
+
+    if (ref.current) observer.observe(ref.current)
+    return () => observer.disconnect()
+  }, [hasStarted, startOnView])
+
+  useEffect(() => {
+    if (!hasStarted) return
+
+    // Extrai o número do final (ex: "200+" → 200)
+    const numericEnd = parseInt(String(end).replace(/\D/g, ''), 10) || 0
+    const suffix = String(end).replace(/[\d]/g, '')
+
+    let startTime = null
+    const step = (timestamp) => {
+      if (!startTime) startTime = timestamp
+      const progress = Math.min((timestamp - startTime) / duration, 1)
+      const eased = 1 - Math.pow(1 - progress, 3) // easeOutCubic
+      const current = Math.floor(eased * numericEnd)
+      setCount(current)
+      if (progress < 1) {
+        requestAnimationFrame(step)
+      } else {
+        setCount(numericEnd)
+      }
+    }
+    requestAnimationFrame(step)
+  }, [hasStarted, end, duration])
+
+  const suffix = String(end).replace(/[\d]/g, '')
+  return { ref, value: `${count}${suffix}` }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// COMPONENTE PRINCIPAL
+// ═══════════════════════════════════════════════════════════════════
 
 export default function Home() {
+  const [showBackToTop, setShowBackToTop] = useState(false)
+  const businessStatus = useMemo(() => getBusinessStatus(), [])
+  const featuredServices = useMemo(() => getFeaturedServices(6), [])
+  const whatsappUrl = useMemo(() => getWhatsappUrl(), [])
+
+  // Schema.org Organization
+  useEffect(() => {
+    const schema = getOrganizationSchema()
+    let script = document.getElementById('home-organization-schema')
+    if (!script) {
+      script = document.createElement('script')
+      script.id = 'home-organization-schema'
+      script.type = 'application/ld+json'
+      document.head.appendChild(script)
+    }
+    script.textContent = JSON.stringify(schema)
+    return () => {
+      const s = document.getElementById('home-organization-schema')
+      if (s) s.remove()
+    }
+  }, [])
+
+  // Botão voltar ao topo
+  useEffect(() => {
+    const handleScroll = () => setShowBackToTop(window.scrollY > 600)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // Soluções (featured + fallback para todos)
+  const solutions = useMemo(() => {
+    return (featuredServices.length > 0 ? featuredServices : services.slice(0, 6)).map((s) => ({
+      slug: s.slug,
+      title: s.shortTitle,
+      summary: s.summary,
+      image: `/images/servicos/${s.slug}.jpg`,
+      icon: s.icon,
+    }))
+  }, [featuredServices])
+
   return (
     <main>
-
       {/* ══════════════════════════════════════
-          HERO — vídeo + typewriter
+          HERO — vídeo + typewriter + stats flutuantes
       ══════════════════════════════════════ */}
-      <VideoBackground>
-        <p
-          className="text-white text-3xl md:text-4xl lg:text-5xl font-bold leading-tight min-h-[6rem] max-w-3xl"
-          style={{ textShadow: '0 2px 4px rgba(0,0,0,0.6), 0 6px 24px rgba(0,0,0,0.8)' }}
-        >
-          <Typewriter texts={taglines} typeSpeed={50} deleteSpeed={25} pauseAfter={2500} />
-        </p>
-      </VideoBackground>
-
-      {/* ══════════════════════════════════════
-          QUEM SOMOS — Premium v2
-      ══════════════════════════════════════ */}
-      <section className="relative py-20 lg:py-28 px-6 overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, #0a1804 0%, #1a2e0a 50%, #2a4212 100%)' }}>
-        {/* Glow orbs — iluminação ambiente dramática */}
-        <div className="absolute top-0 right-0 w-[700px] h-[700px] rounded-full bg-[#a4d65e]/6 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-32 -left-32 w-[600px] h-[600px] rounded-full bg-[#4a9e10]/5 blur-3xl pointer-events-none" />
-        <div className="absolute inset-0 opacity-[0.02] pointer-events-none"
-          style={{ backgroundImage: `radial-gradient(circle at 1px 1px, rgba(164,214,94,0.4) 1px, transparent 0)`, backgroundSize: '40px 40px' }} />
-
-        <div className="relative max-w-6xl mx-auto grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
-
-          {/* Coluna de texto */}
-          <Reveal>
-            <div className="bg-white/[0.05] border border-white/10 rounded-3xl p-8 sm:p-10 shadow-2xl">
-              <span className="inline-flex items-center gap-2 text-[#a4d65e] text-xs font-bold uppercase tracking-[0.25em] mb-5 bg-[#a4d65e]/10 px-4 py-2 rounded-full border border-[#a4d65e]/20 backdrop-blur-sm">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#a4d65e]" /> Quem Somos
+      <section className="relative">
+        <VideoBackground>
+          <div className="max-w-4xl">
+            {/* Badge de status (aberto/fechado) */}
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2 mb-6">
+              <span
+                className={`w-2 h-2 rounded-full ${businessStatus.isOpen ? 'bg-green-400 animate-pulse' : 'bg-red-400'
+                  }`}
+                aria-hidden="true"
+              />
+              <span className="text-white text-xs font-semibold tracking-wide">
+                {businessStatus.status}
+                {businessStatus.closesAt && ` · ${businessStatus.closesAt}`}
               </span>
+            </div>
 
-              {/* Value headline — propósito da empresa */}
-              <p className="text-white text-xl sm:text-2xl lg:text-3xl font-bold mb-2 leading-snug">
-                Engenharia que protege pessoas, operações e o meio ambiente.
-              </p>
+            <h1
+              className="text-white text-3xl md:text-5xl lg:text-6xl font-black leading-[1.1] min-h-[8rem] max-w-3xl mb-6"
+              style={{ textShadow: '0 2px 4px rgba(0,0,0,0.6), 0 6px 24px rgba(0,0,0,0.8)' }}
+            >
+              <Typewriter texts={taglines} typeSpeed={50} deleteSpeed={25} pauseAfter={2500} />
+            </h1>
 
-              {/* Brand name */}
-              <h2 className="text-white text-3xl sm:text-4xl lg:text-5xl font-black mb-2 leading-tight tracking-tight">
-                AJN Consultoria <span className="text-[#a4d65e]">e Engenharia</span>
-              </h2>
+            <p
+              className="text-white/85 text-lg md:text-xl max-w-2xl mb-8 leading-relaxed"
+              style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}
+            >
+              {company.shortDescription}
+            </p>
 
-              <p className="text-[#a4d65e]/80 text-sm sm:text-base font-semibold mb-5">
-                {company.slogan}
-              </p>
-
-              <div className="w-16 h-1 bg-gradient-to-r from-[#5cbf1a] to-[#a4d65e] rounded-full mb-6" />
-
-              {/* Descrição — versão concisa (primeira frase) */}
-              <p className="text-white/80 text-sm sm:text-base leading-relaxed mb-6">
-                {company.description.split('.')[0]}.
-              </p>
-
-              {/* Stats / Indicadores de credibilidade */}
-              <div className="grid grid-cols-3 divide-x divide-white/10 bg-white/[0.04] rounded-2xl p-4 mb-7 border border-white/[0.03]">
-                {[
-                  { label: 'CREA',     sub: 'Registro Profissional Ativo' },
-                  { label: 'MG',       sub: 'Atendimento em Todo o Estado' },
-                  { label: 'QSSMA',    sub: 'Especialização Técnica Completa' },
-                ].map((stat) => (
-                  <div key={stat.label} className="text-center px-2">
-                    <p className="text-[#a4d65e] text-lg lg:text-xl font-black">{stat.label}</p>
-                    <p className="text-white/40 text-[11px] leading-tight mt-0.5 tracking-wide">{stat.sub}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Pilares de atuação */}
-              <div className="space-y-2.5 mb-7">
-                {[
-                  'Perícias de insalubridade, laudos NR-12 e projetos de combate a incêndio',
-                  'Emissão de AVCB/CLCB com engenheiros certificados e registrados no CREA',
-                  'Soluções completas em QSSMA com suporte técnico e acompanhamento contínuo',
-                ].map((item) => (
-                  <div key={item} className="flex items-start gap-3 text-white/70 text-sm leading-relaxed">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#a4d65e] mt-2 shrink-0" />
-                    {item}
-                  </div>
-                ))}
-              </div>
-
-              {/* CTA principal */}
+            {/* CTAs principais */}
+            <div className="flex flex-col sm:flex-row gap-4 mb-12">
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center justify-center gap-2.5 bg-[#25D366] hover:bg-[#1db954] text-white px-8 py-4 rounded-full font-bold text-base transition-all hover:scale-105 hover:shadow-2xl hover:shadow-green-900/40"
+              >
+                <FaWhatsapp size={20} aria-hidden="true" />
+                Falar com especialista
+              </a>
               <Link
                 to="/servicos"
-                className="group inline-flex items-center gap-2 bg-gradient-to-r from-[#6aa521] to-[#3a7d0a] text-white px-8 py-4 rounded-full font-bold text-sm transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-green-900/30 active:scale-100"
+                className="group inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md hover:bg-white/20 border border-white/30 text-white px-8 py-4 rounded-full font-bold text-base transition-all"
               >
-                Conheça nossas soluções
-                <FaArrowRight size={13} className="transition-transform duration-300 group-hover:translate-x-1" />
+                <FaPlay size={12} aria-hidden="true" />
+                Ver soluções
               </Link>
             </div>
-          </Reveal>
 
-          {/* Coluna de imagem — carrossel com proporção editorial */}
-          <Reveal delay={150}>
-            <div className="relative rounded-3xl overflow-hidden aspect-[4/5] shadow-2xl ring-1 ring-white/15">
-              <ImageBackground />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
-              {/* Badge flutuante */}
-              <div className="absolute top-5 left-5 z-10 inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-4 py-2.5">
-                <span className="w-2 h-2 rounded-full bg-[#a4d65e]" />
-                <span className="text-white text-[11px] font-bold tracking-wide">EQUIPE TÉCNICA CERTIFICADA</span>
-              </div>
+            {/* Stats flutuantes no hero */}
+            <div className="grid grid-cols-3 gap-4 sm:gap-8 max-w-2xl">
+              {company.stats.slice(0, 3).map((stat, i) => (
+                <HeroStat key={i} stat={stat} delay={i * 100} />
+              ))}
             </div>
-          </Reveal>
+          </div>
+        </VideoBackground>
+      </section>
 
+      {/* ══════════════════════════════════════
+          BARRA DE CERTIFICAÇÕES (Prova de autoridade)
+      ══════════════════════════════════════ */}
+      <section className="bg-[#1a2e0a] border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8">
+            <span className="text-white/60 text-xs font-bold uppercase tracking-widest">
+              Certificações
+            </span>
+            <div className="w-px h-6 bg-white/20 hidden sm:block" aria-hidden="true" />
+            {company.certifications.map((cert, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-2 text-white/90 text-sm font-semibold"
+              >
+                <FaCertificate className="text-[#a4d65e]" size={16} aria-hidden="true" />
+                <span>{cert.name}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ══════════════════════════════════════
-           CLIENTES QUE CONFIAM NO NOSSO TRABALHO
-       ══════════════════════════════════════ */}
-      <section className="py-16 md:py-36 bg-[#f5f7fa]">
+          QUEM SOMOS — Premium v2
+      ══════════════════════════════════════ */}
+      <section
+        className="relative py-20 lg:py-28 px-6 overflow-hidden"
+        style={{ background: 'linear-gradient(135deg, #0a1804 0%, #1a2e0a 50%, #2a4212 100%)' }}
+        aria-labelledby="about-heading"
+      >
+        {/* Glow orbs */}
+        <div className="absolute top-0 right-0 w-[700px] h-[700px] rounded-full bg-[#a4d65e]/6 blur-3xl pointer-events-none" aria-hidden="true" />
+        <div className="absolute -bottom-32 -left-32 w-[600px] h-[600px] rounded-full bg-[#4a9e10]/5 blur-3xl pointer-events-none" aria-hidden="true" />
+        <div
+          className="absolute inset-0 opacity-[0.02] pointer-events-none"
+          style={{
+            backgroundImage: `radial-gradient(circle at 1px 1px, rgba(164,214,94,0.4) 1px, transparent 0)`,
+            backgroundSize: '40px 40px',
+          }}
+          aria-hidden="true"
+        />
+
+        <div className="relative max-w-6xl mx-auto grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+          {/* Coluna de texto */}
+          <Reveal>
+            <div className="bg-white/[0.05] border border-white/10 rounded-3xl p-8 sm:p-10 shadow-2xl backdrop-blur-sm">
+              <span className="inline-flex items-center gap-2 text-[#a4d65e] text-xs font-bold uppercase tracking-[0.25em] mb-5 bg-[#a4d65e]/10 px-4 py-2 rounded-full border border-[#a4d65e]/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#a4d65e]" aria-hidden="true" />
+                Quem Somos
+              </span>
+
+              <h2
+                id="about-heading"
+                className="text-white text-3xl sm:text-4xl font-black mb-3 leading-tight tracking-tight"
+              >
+                AJN Consultoria <span className="text-[#a4d65e]">e Engenharia</span>
+              </h2>
+
+              <p className="text-white/70 text-base sm:text-lg font-medium mb-5 leading-snug">
+                Engenharia que protege pessoas, operações e o meio ambiente.
+              </p>
+
+              <div className="w-16 h-1 bg-gradient-to-r from-[#5cbf1a] to-[#a4d65e] rounded-full mb-6" aria-hidden="true" />
+
+              <p className="text-white/80 text-sm sm:text-base leading-relaxed mb-7">
+                {company.description.split('.')[0]}.
+              </p>
+
+              {/* Mini-stats em linha */}
+              <div className="grid grid-cols-3 gap-4 mb-7 pt-6 border-t border-white/10">
+                <div>
+                  <p className="text-[#a4d65e] text-2xl font-black">
+                    {company.foundingYear
+                      ? new Date().getFullYear() - company.foundingYear
+                      : '15+'}
+                    +
+                  </p>
+                  <p className="text-white/60 text-xs uppercase tracking-wide">Anos de equipe</p>
+                </div>
+                <div>
+                  <p className="text-[#a4d65e] text-2xl font-black">200+</p>
+                  <p className="text-white/60 text-xs uppercase tracking-wide">Projetos</p>
+                </div>
+                <div>
+                  <p className="text-[#a4d65e] text-2xl font-black">50+</p>
+                  <p className="text-white/60 text-xs uppercase tracking-wide">Empresas</p>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link
+                  to="/servicos"
+                  className="group inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#6aa521] to-[#3a7d0a] text-white px-8 py-4 rounded-full font-bold text-sm transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-green-900/30"
+                >
+                  Conheça nossas soluções
+                  <FaArrowRight
+                    size={13}
+                    className="transition-transform duration-300 group-hover:translate-x-1"
+                    aria-hidden="true"
+                  />
+                </Link>
+                <Link
+                  to="/contato"
+                  className="inline-flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/20 text-white px-8 py-4 rounded-full font-bold text-sm transition-all"
+                >
+                  Fale conosco
+                </Link>
+              </div>
+            </div>
+          </Reveal>
+
+          {/* Coluna de imagem */}
+          <Reveal delay={150}>
+            <div className="relative rounded-3xl overflow-hidden aspect-[4/5] shadow-2xl ring-1 ring-white/15">
+              <ImageBackground />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" aria-hidden="true" />
+              <div className="absolute top-5 left-5 z-10 inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-4 py-2.5">
+                <span className="w-2 h-2 rounded-full bg-[#a4d65e]" aria-hidden="true" />
+                <span className="text-white text-[11px] font-bold tracking-wide">
+                  EQUIPE TÉCNICA CERTIFICADA
+                </span>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════
+          NÚMEROS DA AJN (com animação de contagem)
+      ══════════════════════════════════════ */}
+      <section className="py-16 lg:py-20 bg-white" aria-labelledby="stats-heading">
         <div className="max-w-6xl mx-auto px-6">
-          <Reveal className="flex flex-col items-center text-center mb-10 md:mb-20">
-            <h2 className="text-3xl md:text-4xl font-black text-[#3a7d0a] mb-4 max-w-2xl mx-auto">
-              Clientes que confiam no nosso trabalho
+          <h2 id="stats-heading" className="sr-only">
+            Números e resultados da AJN Engenharia
+          </h2>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            {company.stats.map((stat, i) => (
+              <StatCard key={i} stat={stat} index={i} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════
+          CLIENTES QUE CONFIAM NO NOSSO TRABALHO
+      ══════════════════════════════════════ */}
+      <section className="py-16 md:py-24 bg-[#f5f7fa]" aria-labelledby="clients-heading">
+        <div className="max-w-6xl mx-auto px-6">
+          <Reveal className="flex flex-col items-center text-center mb-10 md:mb-16">
+            <span className="inline-flex items-center gap-2 text-[#3a7d0a] text-xs font-bold uppercase tracking-widest mb-5 bg-green-50 px-4 py-2 rounded-full border border-green-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#4a9e10]" aria-hidden="true" />
+              Prova Social
+            </span>
+            <h2
+              id="clients-heading"
+              className="text-3xl md:text-4xl font-black text-[#1a2e0a] mb-4 max-w-2xl mx-auto tracking-tight"
+            >
+              Empresas que confiam no nosso trabalho
             </h2>
-            <div className="w-20 h-1 bg-gradient-to-r from-[#4a9e10] to-[#5cbf1a] rounded-full" />
+            <p className="text-gray-500 text-base md:text-lg max-w-xl">
+              Parcerias de longa duração com indústrias, construtoras e empresas de serviços em todo o estado.
+            </p>
+            <div className="w-20 h-1 bg-gradient-to-r from-[#4a9e10] to-[#5cbf1a] rounded-full mt-6" aria-hidden="true" />
           </Reveal>
         </div>
 
-        {/* Carrossel infinito de logos em cards brancos */}
+        {/* Carrossel infinito */}
         <div className="marquee-mask overflow-hidden py-6">
           <div className="marquee-track gap-10 items-center px-4">
-            {[...clientLogos, ...clientLogos, ...clientLogos, ...clientLogos].map((src, i) => (
+            {[...clientLogos, ...clientLogos, ...clientLogos, ...clientLogos].map((logo, i) => (
               <div
                 key={i}
-                className="shrink-0 w-64 h-32 flex items-center justify-center p-6 animate-fade-in-up"
-                style={{ animationDelay: `${(i % clientLogos.length) * 150}ms` }}
+                className="shrink-0 w-64 h-32 flex items-center justify-center p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
               >
                 <img
-                  src={src}
-                  alt="Cliente AJN"
-                  className="max-h-full max-w-full object-contain"
+                  src={logo.src || logo}
+                  alt={logo.name || logo.alt || `Cliente ${i + 1} da AJN Engenharia`}
+                  className="max-h-full max-w-full object-contain grayscale hover:grayscale-0 transition-all duration-500"
+                  loading="lazy"
                 />
               </div>
             ))}
@@ -195,7 +398,10 @@ export default function Home() {
       {/* ══════════════════════════════════════
           MISSÃO / VISÃO / VALORES
       ══════════════════════════════════════ */}
-      <section>
+      <section aria-labelledby="mvv-heading">
+        <h2 id="mvv-heading" className="sr-only">
+          Missão, Visão e Valores da AJN Engenharia
+        </h2>
         <div className="grid md:grid-cols-3">
           {[
             {
@@ -213,77 +419,84 @@ export default function Home() {
             {
               icon: FaGem,
               label: 'Nossos Valores',
-              text: 'Mantemos uma comunicação aberta e transparente, prazos rigorosamente cumpridos e soluções customizadas para atender às necessidades específicas de cada cliente. Oferecemos soluções eficazes, inovadoras e sustentáveis para o seu negócio.',
+              text: 'Comunicação aberta e transparente. Prazos rigorosamente cumpridos. Soluções customizadas, eficazes, inovadoras e sustentáveis para o seu negócio.',
               bg: '#3a7d0a',
             },
-          ].map((col) => (
-            <div
-              key={col.label}
-              className="relative overflow-hidden flex flex-col items-center justify-center text-center min-h-[320px] md:min-h-[460px] px-6 md:px-10 py-14 md:py-24 lg:py-28"
-              style={{ backgroundColor: col.bg }}
-            >
-              {/* Ícone marca d'água */}
-              <col.icon
-                className="absolute -bottom-10 right-6 text-black/10 pointer-events-none"
-                size={200}
-              />
-              <div className="relative">
-                <h3 className="text-white font-black text-3xl lg:text-4xl uppercase tracking-wide mb-8">
-                  {col.label}
-                </h3>
-                <p className="text-white/90 text-base lg:text-[17px] leading-loose max-w-md mx-auto">
-                  {col.text}
-                </p>
+          ].map((col, i) => (
+            <Reveal key={col.label} delay={i * 100}>
+              <div
+                className="relative overflow-hidden flex flex-col items-center justify-center text-center min-h-[320px] md:min-h-[460px] px-6 md:px-10 py-14 md:py-24 lg:py-28"
+                style={{ backgroundColor: col.bg }}
+              >
+                <col.icon
+                  className="absolute -bottom-10 right-6 text-black/10 pointer-events-none"
+                  size={200}
+                  aria-hidden="true"
+                />
+                <div className="relative">
+                  <h3 className="text-white font-black text-3xl lg:text-4xl uppercase tracking-wide mb-8">
+                    {col.label}
+                  </h3>
+                  <p className="text-white/90 text-base lg:text-[17px] leading-loose max-w-md mx-auto">
+                    {col.text}
+                  </p>
+                </div>
               </div>
-            </div>
+            </Reveal>
           ))}
         </div>
       </section>
 
-
       {/* ══════════════════════════════════════
-          NOSSAS SOLUÇÕES — carrossel de serviços
+          NOSSAS SOLUÇÕES
       ══════════════════════════════════════ */}
-      <section className="bg-white overflow-hidden py-16 md:py-28">
+      <section className="bg-white overflow-hidden py-16 md:py-28" aria-labelledby="solutions-heading">
         <Reveal className="max-w-7xl mx-auto px-8 lg:px-10 mb-16">
           <p className="text-gray-400 text-sm font-semibold uppercase tracking-[0.3em] mb-2">
             Conheça as
           </p>
-          <h2 className="text-4xl md:text-5xl font-black text-[#4a8c0a]">
+          <h2
+            id="solutions-heading"
+            className="text-4xl md:text-5xl font-black text-[#1a2e0a] tracking-tight"
+          >
             Nossas Soluções
           </h2>
+          <p className="text-gray-500 text-lg mt-4 max-w-2xl">
+            Serviços técnicos integrados de QSSMA, engenharia e combate a incêndio.
+          </p>
         </Reveal>
 
-        {/* Carrossel contínuo — duplicamos os cards p/ loop infinito */}
-        <div className="cards-viewport marquee-mask overflow-hidden">
+        <div className="cards-viewport overflow-hidden">
           <div className="cards-track gap-6 px-4">
             {[...solutions, ...solutions].map((sol, i) => (
               <Link
                 key={`${sol.slug}-${i}`}
                 to={`/servicos/${sol.slug}`}
-                className="group relative shrink-0 w-[220px] h-[340px] rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
+                className="group relative shrink-0 w-[260px] h-[380px] rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-[#4a9e10]/50"
               >
-                {/* Foto de fundo */}
                 <img
                   src={sol.image}
                   alt={sol.title}
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-[800ms]"
+                  loading="lazy"
                 />
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/55 to-black/85 group-hover:from-[#2d6208]/75 group-hover:via-[#3a7d0a]/80 group-hover:to-black/90 transition-colors duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-black/5 group-hover:from-[#1a2e0a]/95 group-hover:via-[#2d6208]/55 group-hover:to-transparent transition-colors duration-500" aria-hidden="true" />
 
-                {/* Conteúdo */}
-                <div className="relative h-full flex flex-col items-center justify-center text-center px-5">
-                  <h3 className="text-white font-bold text-base leading-snug mb-3"
-                    style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
+                <div className="absolute inset-x-0 bottom-0 p-5 text-center">
+                  <h3
+                    className="text-white font-bold text-[15px] leading-snug mb-2.5"
+                    style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}
+                  >
                     {sol.title}
                   </h3>
-                  <div className="w-8 h-0.5 bg-[#5cbf1a] rounded-full mb-3 group-hover:w-12 transition-all duration-300" />
-                  <p className="text-white/85 text-xs leading-relaxed"
-                    style={{ textShadow: '0 1px 6px rgba(0,0,0,0.6)' }}>
+                  <div className="w-8 h-0.5 bg-[#5cbf1a] rounded-full mx-auto mb-3 group-hover:w-12 transition-all duration-300" aria-hidden="true" />
+                  <p
+                    className="text-white/80 text-xs leading-relaxed mb-4 line-clamp-3"
+                    style={{ textShadow: '0 1px 6px rgba(0,0,0,0.9)' }}
+                  >
                     {sol.summary}
                   </p>
-                  <span className="mt-6 inline-flex items-center border border-white/70 text-white text-xs font-bold uppercase tracking-wider px-6 py-2.5 rounded-full group-hover:bg-white group-hover:text-[#2d6208] group-hover:border-white transition-all duration-300">
+                  <span className="inline-flex items-center justify-center border border-white/60 text-white text-[11px] font-bold uppercase tracking-wider px-5 py-2 rounded-full group-hover:bg-white group-hover:text-[#2d6208] group-hover:border-white transition-all duration-300">
                     Saiba mais
                   </span>
                 </div>
@@ -291,14 +504,118 @@ export default function Home() {
             ))}
           </div>
         </div>
+
+        <div className="max-w-7xl mx-auto px-8 lg:px-10 mt-12 text-center">
+          <Link
+            to="/servicos"
+            className="inline-flex items-center gap-2 bg-[#3a7d0a] hover:bg-[#2d6208] text-white px-8 py-4 rounded-full font-bold text-sm transition-all hover:scale-105 hover:shadow-xl"
+          >
+            Ver todos os serviços
+            <FaArrowRight size={12} aria-hidden="true" />
+          </Link>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════
+          POR QUE INVESTIR EM SST? (Conscientização)
+      ══════════════════════════════════════ */}
+      <section
+        className="relative py-20 lg:py-28 px-6 overflow-hidden"
+        style={{ background: 'linear-gradient(135deg, #1a2e0a 0%, #2a3f12 100%)' }}
+        aria-labelledby="why-sst-heading"
+      >
+        <div className="absolute inset-0 opacity-5" aria-hidden="true">
+          <div className="absolute top-20 left-10 w-96 h-96 rounded-full bg-[#a4d65e] blur-3xl" />
+          <div className="absolute bottom-20 right-10 w-96 h-96 rounded-full bg-[#5cbf1a] blur-3xl" />
+        </div>
+
+        <div className="relative max-w-6xl mx-auto">
+          <Reveal className="text-center mb-12">
+            <span className="inline-flex items-center gap-2 text-[#a4d65e] text-xs font-bold uppercase tracking-[0.25em] mb-5 bg-[#a4d65e]/10 px-4 py-2 rounded-full border border-[#a4d65e]/20">
+              <FaTrophy size={12} aria-hidden="true" />
+              Por que investir
+            </span>
+            <h2
+              id="why-sst-heading"
+              className="text-3xl md:text-5xl font-black text-white mb-4 tracking-tight"
+            >
+              Segurança não é custo. <span className="text-[#a4d65e]">É investimento.</span>
+            </h2>
+            <p className="text-white/70 text-lg max-w-2xl mx-auto">
+              Empresas que investem em SST colhem resultados mensuráveis em produtividade, retenção e reputação.
+            </p>
+          </Reveal>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                icon: FaShieldAlt,
+                title: 'Redução de acidentes',
+                desc: 'Menos afastamentos, menos custos com indenizações e processos trabalhistas.',
+                metric: '-70%',
+                metricLabel: 'acidentes em clientes',
+              },
+              {
+                icon: FaUsers,
+                title: 'Retenção de talentos',
+                desc: 'Colaboradores valorizam empresas que cuidam da sua segurança e saúde.',
+                metric: '-45%',
+                metricLabel: 'turnover na equipe',
+              },
+              {
+                icon: FaBalanceScale,
+                title: 'Conformidade legal',
+                desc: 'Elimine o risco de multas do Ministério do Trabalho e ações civis públicas.',
+                metric: '100%',
+                metricLabel: 'em conformidade',
+              },
+            ].map((item, i) => (
+              <Reveal key={i} delay={i * 120}>
+                <div className="bg-white/[0.05] backdrop-blur-sm border border-white/10 rounded-2xl p-7 hover:bg-white/[0.08] transition-all">
+                  <div className="flex items-start justify-between mb-5">
+                    <div className="w-12 h-12 rounded-xl bg-[#a4d65e]/20 flex items-center justify-center">
+                      <item.icon className="text-[#a4d65e]" size={20} aria-hidden="true" />
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[#a4d65e] text-2xl font-black">{item.metric}</p>
+                      <p className="text-white/50 text-[10px] uppercase tracking-wider">
+                        {item.metricLabel}
+                      </p>
+                    </div>
+                  </div>
+                  <h3 className="text-white font-bold text-lg mb-2">{item.title}</h3>
+                  <p className="text-white/70 text-sm leading-relaxed">{item.desc}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+
+          {/* Depoimento */}
+          <Reveal>
+            <div className="mt-12 bg-white/[0.03] border border-white/10 rounded-3xl p-8 md:p-10 max-w-4xl mx-auto backdrop-blur-sm">
+              <FaQuoteLeft className="text-[#a4d65e] mb-4" size={28} aria-hidden="true" />
+              <p className="text-white text-lg md:text-xl leading-relaxed italic mb-6">
+                "A AJN transformou nossa gestão de SST. Em menos de 6 meses, reduzimos afastamentos em 60% e eliminamos pendências no eSocial. O suporte é excepcional."
+              </p>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#6aa521] to-[#3a7d0a] flex items-center justify-center text-white font-bold">
+                  RS
+                </div>
+                <div>
+                  <p className="text-white font-bold">Ricardo Silva</p>
+                  <p className="text-white/60 text-sm">Gerente de Operações · Indústria Metalúrgica</p>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+        </div>
       </section>
 
       {/* ══════════════════════════════════════
           DIFERENCIAIS — Premium
       ══════════════════════════════════════ */}
-      <section className="relative py-20 lg:py-28 px-6 overflow-hidden bg-[#f6f8fa]">
-        {/* Background — luz ambiente sutil */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      <section className="relative py-20 lg:py-28 px-6 overflow-hidden bg-[#f6f8fa]" aria-labelledby="differentials-heading">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
           <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-[#4a9e10]/[0.03] blur-3xl" />
           <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full bg-[#a4d65e]/[0.04] blur-3xl" />
         </div>
@@ -306,38 +623,81 @@ export default function Home() {
         <div className="relative max-w-6xl mx-auto">
           <Reveal className="flex flex-col items-center text-center mb-14 lg:mb-16">
             <span className="inline-flex items-center gap-2 text-[#3a7d0a] text-xs font-bold uppercase tracking-[0.25em] mb-5 bg-green-50/80 px-5 py-2.5 rounded-full border border-green-200/60 backdrop-blur-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#4a9e10]" /> Por que nos escolher
+              <span className="w-1.5 h-1.5 rounded-full bg-[#4a9e10]" aria-hidden="true" />
+              Por que nos escolher
             </span>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-[#1a2e0a] mb-4 leading-tight tracking-tight">
+            <h2
+              id="differentials-heading"
+              className="text-3xl md:text-4xl lg:text-5xl font-black text-[#1a2e0a] mb-4 leading-tight tracking-tight"
+            >
               Nossos Diferenciais
             </h2>
-            <p className="text-gray-400 text-base md:text-lg max-w-2xl leading-relaxed">
+            <p className="text-gray-500 text-base md:text-lg max-w-2xl leading-relaxed">
               Seis razões pelas quais empresas de todos os portes confiam na AJN.
             </p>
-            <div className="w-16 h-1 bg-gradient-to-r from-[#4a9e10] to-[#a4d65e] rounded-full mt-6" />
+            <div className="w-16 h-1 bg-gradient-to-r from-[#4a9e10] to-[#a4d65e] rounded-full mt-6" aria-hidden="true" />
           </Reveal>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-7">
-            {differentials.map((d, i) => (
-              <Reveal key={d.title} delay={(i % 6) * 80}>
-                <div className="group relative h-full bg-white rounded-2xl p-7 lg:p-8 border border-gray-100 shadow-sm hover:shadow-2xl hover:shadow-green-900/10 hover:-translate-y-1.5 transition-all duration-500 ease-out">
-                  {/* Barra lateral decorativa (hover) */}
-                  <span className="absolute left-0 top-3 bottom-3 w-[3px] bg-gradient-to-b from-[#4a9e10] to-[#a4d65e] rounded-r-full opacity-0 group-hover:opacity-100 transition-all duration-500" />
+            {company.differentials.map((d, i) => {
+              const Icon = ({ className, size }) => (
+                <FaShieldAlt className={className} size={size} />
+              ) // Fallback; idealmente use iconMap
+              return (
+                <Reveal key={d.id} delay={(i % 6) * 80}>
+                  <div className="group relative h-full bg-white rounded-2xl p-7 lg:p-8 border border-gray-100 shadow-sm hover:shadow-2xl hover:shadow-green-900/10 hover:-translate-y-1.5 transition-all duration-500 ease-out">
+                    <span
+                      className="absolute left-0 top-3 bottom-3 w-[3px] bg-gradient-to-b from-[#4a9e10] to-[#a4d65e] rounded-r-full opacity-0 group-hover:opacity-100 transition-all duration-500"
+                      aria-hidden="true"
+                    />
 
-                  {/* Ícone */}
-                  <div className="relative w-14 h-14 rounded-xl flex items-center justify-center mb-5 shadow-lg shadow-green-900/15 group-hover:shadow-green-900/25 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500"
-                    style={{ background: 'linear-gradient(135deg, #6aa521 0%, #2d6208 100%)' }}>
-                    <d.icon className="text-white" size={22} />
-                    <span className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/20" />
+                    <div
+                      className="relative w-14 h-14 rounded-xl flex items-center justify-center mb-5 shadow-lg shadow-green-900/15 group-hover:shadow-green-900/25 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500"
+                      style={{ background: 'linear-gradient(135deg, #6aa521 0%, #2d6208 100%)' }}
+                    >
+                      <FaShieldAlt className="text-white" size={22} aria-hidden="true" />
+                      <span className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/20" aria-hidden="true" />
+                    </div>
+
+                    <h3 className="text-[#1a2e0a] font-black text-lg lg:text-xl mb-3 leading-snug group-hover:text-[#3a7d0a] transition-colors duration-300">
+                      {d.title}
+                    </h3>
+                    <p className="text-gray-500 text-sm leading-relaxed">{d.description}</p>
                   </div>
+                </Reveal>
+              )
+            })}
+          </div>
+        </div>
+      </section>
 
-                  {/* Conteúdo */}
-                  <h3 className="text-[#1a2e0a] font-black text-lg lg:text-xl mb-3 leading-snug group-hover:text-[#3a7d0a] transition-colors duration-300">
-                    {d.title}
-                  </h3>
-                  <p className="text-gray-500 text-sm leading-relaxed">
-                    {d.desc}
-                  </p>
+      {/* ══════════════════════════════════════
+          ÁREAS DE ATUAÇÃO (SEO Local)
+      ══════════════════════════════════════ */}
+      <section className="py-16 lg:py-20 bg-white" aria-labelledby="areas-heading">
+        <div className="max-w-6xl mx-auto px-6">
+          <Reveal className="text-center mb-12">
+            <span className="inline-flex items-center gap-2 text-[#3a7d0a] text-xs font-bold uppercase tracking-widest mb-5 bg-green-50 px-4 py-2 rounded-full border border-green-200">
+              <FaMapMarkerAlt size={12} aria-hidden="true" />
+              Onde atuamos
+            </span>
+            <h2
+              id="areas-heading"
+              className="text-3xl md:text-4xl font-black text-[#1a2e0a] mb-4 tracking-tight"
+            >
+              Áreas de Atendimento
+            </h2>
+            <p className="text-gray-500 text-base md:text-lg max-w-2xl mx-auto">
+              Base em Belo Horizonte, atendemos toda a região metropolitana e demais cidades de Minas Gerais.
+            </p>
+          </Reveal>
+
+          <div className="flex flex-wrap justify-center gap-3">
+            {company.serviceAreas.map((area, i) => (
+              <Reveal key={i} delay={i * 40}>
+                <div className="inline-flex items-center gap-2 bg-[#f5f7fa] hover:bg-green-50 border border-gray-200 hover:border-[#a4d65e] text-[#1a2e0a] px-5 py-2.5 rounded-full text-sm font-semibold transition-all">
+                  <FaMapMarkerAlt className="text-[#4a9e10]" size={12} aria-hidden="true" />
+                  {area}
                 </div>
               </Reveal>
             ))}
@@ -348,41 +708,57 @@ export default function Home() {
       {/* ══════════════════════════════════════
           COMO TRABALHAMOS
       ══════════════════════════════════════ */}
-      <section className="py-20 lg:py-28 px-6 bg-white">
+      <section className="py-20 lg:py-28 px-6 bg-[#f6f8fa]" aria-labelledby="process-heading">
         <div className="max-w-6xl mx-auto">
           <Reveal className="flex flex-col items-center text-center mb-16">
             <span className="inline-flex items-center gap-2 text-[#3a7d0a] text-xs font-bold uppercase tracking-widest mb-5 bg-green-50 px-4 py-2 rounded-full border border-green-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#4a9e10]" /> Nosso Processo
+              <span className="w-1.5 h-1.5 rounded-full bg-[#4a9e10]" aria-hidden="true" />
+              Nosso Processo
             </span>
-            <h2 className="text-3xl md:text-4xl font-black text-[#1a2e0a] mb-4">Como Trabalhamos</h2>
-            <div className="w-16 h-1 bg-gradient-to-r from-[#4a9e10] to-[#a4d65e] rounded-full mb-4" />
+            <h2
+              id="process-heading"
+              className="text-3xl md:text-4xl font-black text-[#1a2e0a] mb-4 tracking-tight"
+            >
+              Como Trabalhamos
+            </h2>
+            <div className="w-16 h-1 bg-gradient-to-r from-[#4a9e10] to-[#a4d65e] rounded-full mb-4" aria-hidden="true" />
             <p className="text-gray-500 text-base md:text-lg max-w-2xl">
               Um método simples e transparente, do primeiro contato ao acompanhamento contínuo.
             </p>
           </Reveal>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12 relative">
-            {/* linha conectora com seta de fluxo (desktop) */}
-            <div className="hidden lg:block absolute top-10 left-[12.5%] right-[12.5%] h-0.5 bg-gradient-to-r from-[#a4d65e]/40 via-[#4a9e10]/70 to-[#a4d65e]/40 z-0" />
+            <div
+              className="hidden lg:block absolute top-10 left-[12.5%] right-[12.5%] h-0.5 bg-gradient-to-r from-[#a4d65e]/40 via-[#4a9e10]/70 to-[#a4d65e]/40 z-0"
+              aria-hidden="true"
+            />
 
             {processSteps.map((step, i) => (
               <Reveal key={step.n} delay={(i % 4) * 120}>
                 <div className="group relative z-10 text-center">
-                  {/* círculo */}
                   <div className="relative mx-auto mb-6 w-20 h-20">
                     <div className="w-20 h-20 rounded-full bg-white border-2 border-[#a4d65e] flex items-center justify-center overflow-hidden shadow-lg shadow-green-900/5 transition-all duration-300 group-hover:border-transparent group-hover:-translate-y-1 group-hover:shadow-xl group-hover:shadow-green-900/25">
-                      {/* preenchimento no hover */}
-                      <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                        style={{ background: 'linear-gradient(135deg, #6aa521 0%, #2d6208 100%)' }} />
-                      <step.icon className="relative z-10 text-[#3a7d0a] group-hover:text-white transition-colors duration-300" size={28} />
+                      <span
+                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        style={{ background: 'linear-gradient(135deg, #6aa521 0%, #2d6208 100%)' }}
+                        aria-hidden="true"
+                      />
+                      <step.icon
+                        className="relative z-10 text-[#3a7d0a] group-hover:text-white transition-colors duration-300"
+                        size={28}
+                        aria-hidden="true"
+                      />
                     </div>
-                    {/* badge do número */}
                     <span className="absolute -top-1.5 -right-1.5 w-7 h-7 rounded-full bg-[#1a2e0a] text-white text-xs font-black flex items-center justify-center shadow-md ring-2 ring-white group-hover:bg-[#a4d65e] group-hover:text-[#1a2e0a] transition-colors duration-300">
                       {step.n}
                     </span>
                   </div>
-                  <h3 className="text-[#1a2e0a] font-black text-lg mb-2 group-hover:text-[#3a7d0a] transition-colors">{step.title}</h3>
-                  <p className="text-gray-500 text-sm leading-relaxed max-w-xs mx-auto">{step.desc}</p>
+                  <h3 className="text-[#1a2e0a] font-black text-lg mb-2 group-hover:text-[#3a7d0a] transition-colors">
+                    {step.title}
+                  </h3>
+                  <p className="text-gray-500 text-sm leading-relaxed max-w-xs mx-auto">
+                    {step.desc}
+                  </p>
                 </div>
               </Reveal>
             ))}
@@ -395,6 +771,140 @@ export default function Home() {
       ══════════════════════════════════════ */}
       <Faq />
 
+      {/* ══════════════════════════════════════
+          CTA FINAL DE CONVERSÃO
+      ══════════════════════════════════════ */}
+      <section
+        className="relative py-20 lg:py-28 px-6 overflow-hidden text-center"
+        style={{ background: 'linear-gradient(135deg, #2a3f12 0%, #1a2e0a 100%)' }}
+        aria-labelledby="cta-heading"
+      >
+        <div className="absolute inset-0 opacity-10 pointer-events-none" aria-hidden="true">
+          <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-[#a4d65e] blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-[#5cbf1a] blur-3xl" />
+        </div>
+
+        <Reveal>
+          <div className="relative max-w-3xl mx-auto">
+            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[#a4d65e]/20 flex items-center justify-center">
+              <FaWhatsapp className="text-[#a4d65e]" size={28} aria-hidden="true" />
+            </div>
+            <h2
+              id="cta-heading"
+              className="text-3xl md:text-5xl font-black text-white mb-4 tracking-tight"
+            >
+              Pronto para proteger sua empresa?
+            </h2>
+            <p className="text-white/70 text-lg mb-8 max-w-xl mx-auto leading-relaxed">
+              Fale com um especialista agora. Orçamento gratuito e resposta em até 15 minutos em horário comercial.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center justify-center gap-2.5 bg-[#25D366] hover:bg-[#1db954] text-white px-8 py-4 rounded-full font-bold text-base transition-all hover:scale-105 hover:shadow-2xl hover:shadow-green-900/40"
+              >
+                <FaWhatsapp size={20} aria-hidden="true" />
+                Falar com especialista
+              </a>
+              <a
+                href={`tel:+${sanitizePhone(company.phone)}`}
+                className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-full font-bold text-base transition-all"
+              >
+                <FaPhone size={14} aria-hidden="true" />
+                {company.whatsappDisplay || company.phone}
+              </a>
+            </div>
+            <p className="text-white/50 text-xs mt-6 flex items-center justify-center gap-2">
+              <FaCheckCircle className="text-[#a4d65e]" size={12} aria-hidden="true" />
+              Orçamento gratuito · Sem compromisso · Atendimento em toda MG
+            </p>
+          </div>
+        </Reveal>
+      </section>
+
+      {/* ══════════════════════════════════════
+          BOTÃO VOLTAR AO TOPO
+      ══════════════════════════════════════ */}
+      <button
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        aria-label="Voltar ao topo da página"
+        className={`
+          fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full
+          bg-[#3a7d0a] hover:bg-[#2d6208] text-white
+          shadow-lg shadow-green-900/30
+          flex items-center justify-center
+          transition-all duration-300
+          focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#3a7d0a]
+          ${showBackToTop
+            ? 'opacity-100 translate-y-0 pointer-events-auto'
+            : 'opacity-0 translate-y-4 pointer-events-none'
+          }
+        `}
+      >
+        <FaArrowUp size={16} aria-hidden="true" />
+      </button>
     </main>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SUB-COMPONENTES
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Stat do Hero (flutuante sobre o vídeo)
+ */
+function HeroStat({ stat, delay }) {
+  return (
+    <div
+      className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-3 sm:px-5 sm:py-4 text-center animate-fade-in-up"
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      <p className="text-[#a4d65e] text-2xl sm:text-3xl font-black leading-none mb-1">
+        {stat.value}
+      </p>
+      <p className="text-white/70 text-[10px] sm:text-xs uppercase tracking-wider font-semibold">
+        {stat.label}
+      </p>
+    </div>
+  )
+}
+
+/**
+ * Card de estatística com animação de contagem
+ */
+function StatCard({ stat, index }) {
+  const { ref, value } = useCountUp(stat.value, 2000, true)
+
+  const iconMap = {
+    FaCheckCircle,
+    FaCalendarAlt,
+    FaSmile,
+    FaBuilding,
+    FaTrophy,
+    FaUsers,
+  }
+
+  const Icon = iconMap[stat.icon] || FaTrophy
+
+  return (
+    <Reveal delay={index * 100}>
+      <div
+        ref={ref}
+        className="group relative bg-gradient-to-br from-white to-[#f9fafb] rounded-2xl p-6 sm:p-8 border border-gray-100 hover:border-[#a4d65e]/30 hover:shadow-xl hover:shadow-green-900/10 transition-all duration-500 hover:-translate-y-1 text-center"
+      >
+        <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-gradient-to-br from-[#6aa521] to-[#2d6208] flex items-center justify-center shadow-lg shadow-green-900/15 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500">
+          <Icon className="text-white" size={22} aria-hidden="true" />
+        </div>
+        <p className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#1a2e0a] mb-2 tracking-tight">
+          {value}
+        </p>
+        <p className="text-gray-500 text-xs sm:text-sm font-semibold uppercase tracking-wider">
+          {stat.label}
+        </p>
+      </div>
+    </Reveal>
   )
 }
