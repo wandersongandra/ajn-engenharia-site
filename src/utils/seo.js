@@ -9,6 +9,8 @@ export const SITE_NAME = 'AJN Consultoria e Engenharia'
 export const DEFAULT_IMAGE = '/og-image.jpg'
 
 const abs = (path) => `${SITE_URL}${path.startsWith('/') ? path : `/${path}`}`
+// Normaliza o campo image (string OU objeto { src }) sempre para uma URL string
+const imgUrl = (img) => (typeof img === 'string' ? img : img?.src) || DEFAULT_IMAGE
 
 // Schema base da empresa (LocalBusiness)
 const localBusinessSchema = {
@@ -79,13 +81,14 @@ export function getSeo(pathname) {
         title: `${p.title} | Blog ${SITE_NAME}`,
         description: p.excerpt,
         canonical: abs(clean),
-        image: p.image || DEFAULT_IMAGE,
+        image: imgUrl(p.image),
         type: 'article',
         jsonLd: {
           '@context': 'https://schema.org',
           '@type': 'BlogPosting',
           headline: p.title,
           description: p.excerpt,
+          image: abs(imgUrl(p.image)),
           datePublished: p.date,
           dateModified: p.date,
           author: { '@type': 'Organization', name: SITE_NAME },

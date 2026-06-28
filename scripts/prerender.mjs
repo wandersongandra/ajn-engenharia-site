@@ -11,7 +11,10 @@ const DIST = path.resolve(__dirname, '..', 'dist')
 const escAttr = (s = '') =>
   String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 const escJsonLd = (obj) => JSON.stringify(obj).replace(/</g, '\\u003c')
-const absImg = (img) => (img.startsWith('http') ? img : `${SITE_URL}${img}`)
+const absImg = (img) => {
+  const s = typeof img === 'string' ? img : img?.src || '/og-image.jpg'
+  return s.startsWith('http') ? s : `${SITE_URL}${s}`
+}
 
 function buildHead(seo) {
   const img = absImg(seo.image)

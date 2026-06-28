@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
-/* NÃO usar "* { padding:0; margin:0 }" aqui — no Tailwind v4 isso anula
-   todos os utilitários px-*/py-*/mb-* etc. O preflight do Tailwind já reseta. */
+/* NÃO usar reset universal de padding/margin aqui: no Tailwind v4 isso anula
+   os utilitarios de espacamento (padding/margin). O preflight ja faz o reset. */
 
 html { scroll-behavior: smooth; }
 
