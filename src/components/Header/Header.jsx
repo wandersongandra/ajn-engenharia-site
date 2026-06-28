@@ -33,16 +33,16 @@ export default function Header() {
         className="text-white text-[13px] py-3 px-6"
         style={{ background: 'linear-gradient(90deg, #4a6b22 0%, #3a5519 100%)' }}
       >
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-1.5">
+        <div className="max-w-7xl mx-auto flex items-center justify-center sm:justify-between gap-2">
           <a
             href="https://maps.google.com/?q=Rua+Alberto+Cintra,+35,+União,+Belo+Horizonte"
             target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-2.5 text-white/85 hover:text-white transition-colors"
+            className="hidden sm:flex items-center gap-2.5 text-white/85 hover:text-white transition-colors"
           >
             <FaMapMarkerAlt size={13} className="text-[#a4d65e]" />
             Rua Alberto Cintra, 35, sala 601 — Belo Horizonte/MG
           </a>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 sm:gap-6">
             <a href={`https://wa.me/${company.whatsapp}`} target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-2 text-white/85 hover:text-white transition-colors">
               <FaWhatsapp size={14} className="text-[#a4d65e]" /> (31) 98473-4644
@@ -58,7 +58,7 @@ export default function Header() {
 
       {/* ── Navbar branca ── */}
       <nav className={`bg-white border-b border-gray-100 transition-all duration-300 ${scrolled ? 'shadow-md' : ''}`}>
-        <div className={`max-w-7xl mx-auto px-5 flex items-center justify-between transition-all duration-300 ${scrolled ? 'h-24' : 'h-28'}`}>
+        <div className={`max-w-7xl mx-auto px-5 flex items-center justify-between transition-all duration-300 ${scrolled ? 'h-16 sm:h-24' : 'h-20 sm:h-28'}`}>
 
           {/* Logo */}
           <Link to="/" className="flex items-center shrink-0">

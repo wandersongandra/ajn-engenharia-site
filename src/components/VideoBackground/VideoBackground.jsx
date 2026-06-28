@@ -23,13 +23,13 @@ export default function VideoBackground({ children }) {
   }, [current, hasVideo])
 
   return (
-    <div className="relative w-full overflow-hidden bg-black">
+    <div className="relative w-full overflow-hidden bg-black h-[88svh] min-h-[560px] lg:h-[90vh] lg:max-h-[820px]">
 
-      {/* ── Mídia de fundo ── */}
+      {/* ── Mídia de fundo (object-cover: preenche sem distorcer) ── */}
       {hasVideo ? (
         <video
           ref={videoRef} key={current}
-          className="w-full block h-auto"
+          className="absolute inset-0 w-full h-full object-cover"
           autoPlay muted playsInline
           onEnded={() => setCurrent((prev) => (prev + 1) % videos.length)}
         >
@@ -39,17 +39,18 @@ export default function VideoBackground({ children }) {
         <img
           src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=1920&q=80&auto=format&fit=crop"
           alt=""
-          className="w-full block h-auto"
+          className="absolute inset-0 w-full h-full object-cover"
           loading="eager"
         />
       )}
 
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/25" />
+      {/* Overlay — horizontal p/ desktop + reforço inferior p/ mobile */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/30" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 sm:to-transparent" />
 
-      {/* ── Conteúdo (indentado à esquerda) ── */}
+      {/* ── Conteúdo ── */}
       <div className="absolute inset-0 z-10 flex items-center">
-        <div className="w-full max-w-7xl mx-auto px-6 lg:px-10 pt-10 lg:pt-16">
+        <div className="w-full max-w-7xl mx-auto px-6 lg:px-10 pt-20 sm:pt-16">
           <div className="max-w-2xl lg:pl-8">
             {children}
           </div>

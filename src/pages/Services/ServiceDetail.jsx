@@ -32,9 +32,9 @@ export default function ServiceDetail() {
   const related = services.filter((s) => s.id !== service.id).slice(0, 3)
 
   return (
-    <main className="pt-24">
+    <main>
       {/* Banner */}
-      <section className="bg-gradient-to-br from-[#1a3a0a] via-[#2d5c1a] to-[#3a7d0a] py-20 px-6">
+      <section className="bg-gradient-to-br from-[#1a3a0a] via-[#2d5c1a] to-[#3a7d0a] pt-28 sm:pt-36 lg:pt-44 pb-20 px-6">
         <div className="max-w-4xl mx-auto">
           <Link
             to="/servicos"

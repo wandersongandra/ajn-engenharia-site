@@ -1,18 +1,29 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import {
   FaWhatsapp, FaCalendarAlt, FaClock, FaArrowRight, FaHome, FaChevronRight,
-  FaSearch,
+  FaSearch, FaTimes,
 } from 'react-icons/fa'
 import { posts, blogCategories } from '../../data/blog'
 import { company } from '../../data/company'
+import { fmtDate } from '../../utils/fmtDate'
+import Reveal from '../../components/Reveal/Reveal'
 
-const fmtDate = (iso) =>
-  new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
 
 export default function Blog() {
   const [category, setCategory] = useState('Todos')
+  const [searchInput, setSearchInput] = useState('')
   const [query, setQuery] = useState('')
+
+  // Debounce search input to avoid heavy filtering on each keystroke
+  const debounceRef = useRef(null)
+  useEffect(() => {
+    clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      setQuery(searchInput.trim())
+    }, 300)
+    return () => clearTimeout(debounceRef.current)
+  }, [searchInput])
 
   const filtered = posts.filter((p) => {
     const matchCat = category === 'Todos' || p.category === category
@@ -25,6 +36,7 @@ export default function Blog() {
   return (
     <main>
       {/* ══════════ HERO ══════════ */}
+      <Reveal>
       <section className="relative pt-28 sm:pt-36 lg:pt-44 pb-16 sm:pb-20 px-6 overflow-hidden"
         style={{ background: 'linear-gradient(135deg, #1a2e0a 0%, #2a3f12 50%, #44621f 100%)' }}>
         <div className="absolute -top-20 right-10 w-96 h-96 rounded-full bg-[#a4d65e]/10 blur-3xl pointer-events-none" />
@@ -45,39 +57,51 @@ export default function Blog() {
             Artigos sobre QSSMA, saúde ocupacional, laudos técnicos, segurança do trabalho e combate a incêndio.
           </p>
           {/* Busca */}
-          <div className="max-w-md mx-auto relative">
-            <FaSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" size={15} />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar artigo..."
-              className="w-full bg-white/95 backdrop-blur-sm rounded-full pl-12 pr-5 py-3.5 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#a4d65e]"
-            />
-          </div>
+<div className="max-w-md mx-auto relative">
+  <FaSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" size={15} />
+  <input
+    type="text"
+    value={searchInput}
+    onChange={(e) => setSearchInput(e.target.value)}
+    placeholder="Buscar artigo..."
+    className="w-full bg-white/95 backdrop-blur-sm rounded-full pl-12 pr-12 py-3.5 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#a4d65e]"
+  />
+  {searchInput && (
+    <button
+      type="button"
+      onClick={() => setSearchInput('')}
+      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+    >
+      <FaTimes size={14} />
+    </button>
+  )}
+</div>
         </div>
-      </section>
+</section>
+    </Reveal>
 
-      {/* ══════════ CONTEÚDO ══════════ */}
+{/* ══════════ CONTEÚDO ══════════ */}
       <section className="py-16 px-6 bg-[#f5f7fa]">
         <div className="max-w-6xl mx-auto">
 
-          {/* Filtro de categorias */}
-          <div className="flex flex-wrap justify-center gap-2.5 mb-12">
-            {blogCategories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setCategory(cat)}
-                className={`px-5 py-2.5 rounded-full text-sm font-semibold transition-all ${
-                  category === cat
-                    ? 'bg-[#3a7d0a] text-white shadow-lg shadow-green-900/20'
-                    : 'bg-white text-gray-600 border border-gray-200 hover:border-[#a4d65e] hover:text-[#3a7d0a]'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
+{/* Filtro de categorias */}
+<Reveal>
+  <div className="flex flex-wrap justify-center gap-2.5 mb-12">
+    {blogCategories.map((cat) => (
+      <button
+        key={cat}
+        onClick={() => setCategory(cat)}
+        className={`px-5 py-2.5 rounded-full text-sm font-semibold transition-all ${
+          category === cat
+            ? 'bg-[#3a7d0a] text-white shadow-lg shadow-green-900/20'
+            : 'bg-white text-gray-600 border border-gray-200 hover:border-[#a4d65e] hover:text-[#3a7d0a]'
+        }`}
+      >
+        {cat}
+      </button>
+    ))}
+  </div>
+</Reveal>
 
           {filtered.length === 0 && (
             <p className="text-center text-gray-400 py-20">Nenhum artigo encontrado para essa busca.</p>
@@ -85,6 +109,7 @@ export default function Blog() {
 
           {/* Destaque */}
           {featured && (
+          <Reveal>
             <Link to={`/blog/${featured.slug}`}
               className="group grid lg:grid-cols-2 bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 mb-10 border border-gray-100">
               <div className="relative h-56 sm:h-64 lg:h-full min-h-[200px] sm:min-h-[300px] overflow-hidden">
@@ -101,7 +126,9 @@ export default function Blog() {
                   <span className="flex items-center gap-1.5"><FaCalendarAlt size={11} /> {fmtDate(featured.date)}</span>
                   <span className="flex items-center gap-1.5"><FaClock size={11} /> {featured.readTime}</span>
                 </div>
+        </Reveal>
               </div>
+        </Reveal>
               <div className="p-8 lg:p-10 flex flex-col justify-center">
                 <span className="text-[#3a7d0a] text-xs font-bold uppercase tracking-widest mb-3">★ Em destaque</span>
                 <h2 className="text-2xl lg:text-3xl font-black text-[#1a2e0a] mb-4 leading-snug group-hover:text-[#3a7d0a] transition-colors">
@@ -112,10 +139,13 @@ export default function Blog() {
                   Ler artigo completo <FaArrowRight size={12} />
                 </span>
               </div>
+        </Reveal>
             </Link>
+
           )}
 
           {/* Grade */}
+          <Reveal>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
             {rest.map((post) => (
               <Link key={post.slug} to={`/blog/${post.slug}`}
@@ -133,7 +163,8 @@ export default function Blog() {
                   <div className="flex items-center gap-4 text-white/60 text-xs mb-2">
                     <span className="flex items-center gap-1.5"><FaCalendarAlt size={10} /> {fmtDate(post.date)}</span>
                     <span className="flex items-center gap-1.5"><FaClock size={10} /> {post.readTime}</span>
-                  </div>
+</div>
+        </Reveal>
                   <h3 className="text-white font-bold text-base leading-snug mb-2 line-clamp-2"
                     style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
                     {post.title}
@@ -146,6 +177,7 @@ export default function Blog() {
                     Ler artigo <FaArrowRight size={10} />
                   </span>
                 </div>
+        </Reveal>
               </Link>
             ))}
           </div>

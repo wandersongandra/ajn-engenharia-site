@@ -1,14 +1,15 @@
 import { Link } from 'react-router-dom'
 import SectionTitle from '../../components/SectionTitle/SectionTitle'
+import Reveal from '../../components/Reveal/Reveal'
 import { services } from '../../data/services'
 import { company } from '../../data/company'
 import { FaWhatsapp } from 'react-icons/fa'
 
 export default function Services() {
   return (
-    <main className="pt-24">
+    <main>
       {/* Banner */}
-      <section className="bg-gradient-to-br from-[#1a3a0a] via-[#2d5c1a] to-[#3a7d0a] py-20 px-6 text-center relative overflow-hidden">
+      <section className="bg-gradient-to-br from-[#1a3a0a] via-[#2d5c1a] to-[#3a7d0a] pt-28 sm:pt-36 lg:pt-44 pb-20 px-6 text-center relative overflow-hidden">
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 25% 50%, #5cbf1a 0%, transparent 60%), radial-gradient(circle at 75% 50%, #5cbf1a 0%, transparent 60%)' }} />
         <span className="relative inline-block text-[#5cbf1a] text-xs font-bold uppercase tracking-widest mb-4 border border-[#5cbf1a]/40 px-4 py-1.5 rounded-full bg-white/5 backdrop-blur-sm">
           O que oferecemos
@@ -28,11 +29,11 @@ export default function Services() {
             subtitle="Selecione um serviço para conhecer mais detalhes sobre como a AJN pode atender sua empresa."
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {services.map((service) => (
+            {services.map((service, i) => (
+              <Reveal key={service.id} delay={(i % 3) * 100}>
               <Link
-                key={service.id}
                 to={`/servicos/${service.slug}`}
-                className="group relative w-full h-[380px] rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
+                className="group relative block w-full h-[380px] rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
               >
                 <img
                   src={`/images/servicos/${service.slug}.jpg`}
@@ -55,6 +56,7 @@ export default function Services() {
                   </span>
                 </div>
               </Link>
+              </Reveal>
             ))}
           </div>
         </div>

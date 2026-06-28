@@ -7,6 +7,7 @@ import {
 import Typewriter from '../../components/Typewriter/Typewriter'
 import VideoBackground from '../../components/VideoBackground/VideoBackground'
 import ImageBackground from '../../components/ImageBackground/ImageBackground'
+import Reveal from '../../components/Reveal/Reveal'
 
 import { company, clientLogos } from '../../data/company'
 import { services } from '../../data/services'
@@ -79,13 +80,12 @@ export default function Home() {
        ══════════════════════════════════════ */}
       <section className="py-16 md:py-36 bg-[#f5f7fa]">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="flex flex-col items-center text-center mb-10 md:mb-20">
-
+          <Reveal className="flex flex-col items-center text-center mb-10 md:mb-20">
             <h2 className="text-3xl md:text-4xl font-black text-[#3a7d0a] mb-4 max-w-2xl mx-auto">
               Clientes que confiam no nosso trabalho
             </h2>
             <div className="w-20 h-1 bg-gradient-to-r from-[#4a9e10] to-[#5cbf1a] rounded-full" />
-          </div>
+          </Reveal>
         </div>
 
         {/* Carrossel infinito de logos em cards brancos */}
@@ -161,14 +161,14 @@ export default function Home() {
           NOSSAS SOLUÇÕES — carrossel de serviços
       ══════════════════════════════════════ */}
       <section className="bg-white overflow-hidden py-16 md:py-28">
-        <div className="max-w-7xl mx-auto px-8 lg:px-10 mb-16">
+        <Reveal className="max-w-7xl mx-auto px-8 lg:px-10 mb-16">
           <p className="text-gray-400 text-sm font-semibold uppercase tracking-[0.3em] mb-2">
             Conheça as
           </p>
           <h2 className="text-4xl md:text-5xl font-black text-[#4a8c0a]">
             Nossas Soluções
           </h2>
-        </div>
+        </Reveal>
 
         {/* Carrossel contínuo — duplicamos os cards p/ loop infinito */}
         <div className="cards-viewport marquee-mask overflow-hidden">

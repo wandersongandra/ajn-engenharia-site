@@ -9,6 +9,7 @@ import ServiceDetail from './pages/Services/ServiceDetail'
 import Blog from './pages/Blog/Blog'
 import BlogPost from './pages/Blog/BlogPost'
 import Contact from './pages/Contact/Contact'
+import SiteMap from './pages/SiteMap/SiteMap'
 
 // Sobe para o topo a cada troca de rota
 function ScrollToTop() {
@@ -41,6 +42,7 @@ export default function App() {
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:slug" element={<BlogPost />} />
         <Route path="/contato" element={<Contact />} />
+        <Route path="/mapa-do-site" element={<SiteMap />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Footer />
