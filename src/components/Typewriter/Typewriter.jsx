@@ -1,46 +1,79 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react';
 
 export default function Typewriter({ texts, typeSpeed = 60, deleteSpeed = 30, pauseAfter = 2000 }) {
-  const [display, setDisplay] = useState('')
-  const [i, setI] = useState(0)
-  const [phase, setPhase] = useState('typing')
-  const [charIdx, setCharIdx] = useState(0)
+  // Proteção contra array vazio ou inválido
+  if (!texts?.length) return null;
 
-  const currentText = texts[i] || ''
+  const [textIndex, setTextIndex] = useState(0);
+  const [charIndex, setCharIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
-  const startNext = useCallback(() => {
-    setI((p) => (p + 1) % texts.length)
-    setCharIdx(0)
-    setPhase('typing')
-    setDisplay('')
-  }, [texts])
+  // Reinicia o efeito caso o array `texts` mude durante a vida do componente
+  useEffect(() => {
+    setTextIndex(0);
+    setCharIndex(0);
+    setIsDeleting(false);
+    setIsPaused(false);
+  }, [texts]);
+
+  const currentText = texts[textIndex] || '';
 
   useEffect(() => {
-    if (phase === 'typing') {
-      if (charIdx < currentText.length) {
-        const t = setTimeout(() => {
-          setDisplay(currentText.slice(0, charIdx + 1))
-          setCharIdx(charIdx + 1)
-        }, typeSpeed)
-        return () => clearTimeout(t)
+    let timeout;
+
+    if (isPaused) {
+      // Aguarda antes de começar a apagar
+      timeout = setTimeout(() => {
+        setIsPaused(false);
+        setIsDeleting(true);
+      }, pauseAfter);
+    } else if (isDeleting) {
+      if (charIndex === 0) {
+        // Terminou de apagar, avança para o próximo texto
+        setTextIndex((prev) => (prev + 1) % texts.length);
+        setIsDeleting(false);
+        setIsPaused(false);
       } else {
-        const t = setTimeout(() => setPhase('deleting'), pauseAfter)
-        return () => clearTimeout(t)
+        // Remove um caractere
+        timeout = setTimeout(() => {
+          setCharIndex((prev) => prev - 1);
+        }, deleteSpeed);
+      }
+    } else {
+      // Fase de digitação
+      if (charIndex < currentText.length) {
+        timeout = setTimeout(() => {
+          setCharIndex((prev) => prev + 1);
+        }, typeSpeed);
+      } else {
+        // Terminou de digitar, entra em pausa
+        setIsPaused(true);
       }
     }
 
-    if (phase === 'deleting') {
-      if (charIdx > 0) {
-        const t = setTimeout(() => {
-          setDisplay(currentText.slice(0, charIdx - 1))
-          setCharIdx(charIdx - 1)
-        }, deleteSpeed)
-        return () => clearTimeout(t)
-      } else {
-        startNext()
-      }
-    }
-  }, [phase, charIdx, currentText, typeSpeed, deleteSpeed, pauseAfter, startNext])
+    // Cleanup evita memory leaks e timeouts "fantasmas"
+    return () => clearTimeout(timeout);
+  }, [
+    charIndex,
+    isDeleting,
+    isPaused,
+    textIndex,
+    texts.length,
+    typeSpeed,
+    deleteSpeed,
+    pauseAfter,
+    currentText.length
+  ]);
 
-  return <span>{display}<span className="animate-pulse">|</span></span>
+  // Texto exibido é DERIVADO do estado, eliminando riscos de dessincronização
+  const displayText = currentText.slice(0, charIndex);
+
+  return (
+    <span role="status" aria-live="polite" className="inline-flex items-center">
+      {displayText}
+      {/* Cursor some durante a digitação reversa para um efeito mais natural */}
+      {!isDeleting && <span className="animate-pulse">|</span>}
+    </span>
+  );
 }
