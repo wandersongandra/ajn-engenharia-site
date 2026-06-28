@@ -16,9 +16,6 @@ export default function TableOfContents({ content }) {
       .filter(Boolean)
   }, [content])
 
-  // Não renderiza nada se não houver headings (evita navegação vazia)
-  if (headings.length === 0) return null
-
   // Scroll Spy: observa cada heading e atualiza o ativo quando entra na viewport
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -65,6 +62,9 @@ export default function TableOfContents({ content }) {
     // Atualiza a URL com hash sem pular (acessibilidade + bookmarking)
     window.history.pushState(null, '', `#${id}`)
   }
+
+  // Não renderiza nada se não houver headings — depois dos hooks (regras de hooks)
+  if (headings.length === 0) return null
 
   return (
     <nav

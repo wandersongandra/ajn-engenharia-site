@@ -14,6 +14,7 @@ import VideoBackground from '../../components/VideoBackground/VideoBackground'
 import ImageBackground from '../../components/ImageBackground/ImageBackground'
 import Reveal from '../../components/Reveal/Reveal'
 import Faq from '../../components/Faq/Faq'
+import TiltCard from '../../components/TiltCard/TiltCard'
 
 import {
   company, clientLogos, getWhatsappUrl, getBusinessStatus,
@@ -37,6 +38,15 @@ const processSteps = [
   { n: '02', icon: FaFileAlt, title: 'Proposta', desc: 'Apresentamos um plano sob medida, com escopo, prazos e valores claros — sem surpresas.' },
   { n: '03', icon: FaHardHat, title: 'Execução', desc: 'Implementamos programas, laudos, projetos e treinamentos com equipe técnica habilitada.' },
   { n: '04', icon: FaHeadset, title: 'Acompanhamento', desc: 'Monitoramos prazos, atualizamos documentos e damos suporte contínuo à sua equipe.' },
+]
+
+const differentials = [
+  { icon: FaShieldAlt,    title: 'Expertise Técnica Certificada', desc: 'Profissionais certificados com atuação comprovada em projetos de alta complexidade, garantindo conformidade total com as NRs.' },
+  { icon: FaLeaf,         title: 'Gestão Ambiental Estratégica',  desc: 'Práticas sustentáveis integradas às soluções, reduzindo impactos e fortalecendo sua conformidade perante órgãos fiscalizadores.' },
+  { icon: FaMicrochip,    title: 'Inovação Tecnológica Aplicada', desc: 'Ferramentas digitais e metodologias modernas que garantem diagnósticos precisos, laudos ágeis e eliminação de retrabalhos.' },
+  { icon: FaHandshake,    title: 'Atendimento Consultivo Premium', desc: 'Engenheiros seniores dedicados que atuam como parceiros estratégicos, entendendo as necessidades do seu negócio.' },
+  { icon: FaBalanceScale, title: 'Conformidade Legal Garantida',  desc: 'Projetos e laudos 100% alinhados às NRs e à legislação vigente, protegendo sua empresa contra passivos e autuações.' },
+  { icon: FaRocket,       title: 'Agilidade na Implantação',      desc: 'Processos otimizados e equipe mobilizada para entregar soluções completas no menor prazo, sem abrir mão da qualidade.' },
 ]
 
 // ═══════════════════════════════════════════════════════════════════
@@ -639,34 +649,48 @@ export default function Home() {
           </Reveal>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-7">
-            {company.differentials.map((d, i) => {
-              const Icon = ({ className, size }) => (
-                <FaShieldAlt className={className} size={size} />
-              ) // Fallback; idealmente use iconMap
-              return (
-                <Reveal key={d.id} delay={(i % 6) * 80}>
-                  <div className="group relative h-full bg-white rounded-2xl p-7 lg:p-8 border border-gray-100 shadow-sm hover:shadow-2xl hover:shadow-green-900/10 hover:-translate-y-1.5 transition-all duration-500 ease-out">
+            {differentials.map((d, i) => (
+              <Reveal key={d.title} delay={(i % 3) * 120}>
+                <TiltCard className="group" max={9}>
+                  <div
+                    className="relative h-full bg-white rounded-2xl p-7 lg:p-8 border border-gray-100 group-hover:border-[#a4d65e]/50 shadow-sm group-hover:shadow-2xl group-hover:shadow-green-900/15 transition-shadow duration-500 overflow-hidden"
+                    style={{ transformStyle: 'preserve-3d' }}
+                  >
+                    {/* Número de fundo */}
                     <span
-                      className="absolute left-0 top-3 bottom-3 w-[3px] bg-gradient-to-b from-[#4a9e10] to-[#a4d65e] rounded-r-full opacity-0 group-hover:opacity-100 transition-all duration-500"
+                      className="absolute top-3 right-5 text-6xl font-black text-gray-50 group-hover:text-green-100/70 transition-colors leading-none select-none pointer-events-none"
+                      aria-hidden="true"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    {/* Barra de destaque */}
+                    <span
+                      className="absolute top-0 left-7 h-1 w-10 bg-gradient-to-r from-[#4a9e10] to-[#a4d65e] rounded-b-full group-hover:w-[calc(100%-3.5rem)] transition-all duration-500"
                       aria-hidden="true"
                     />
 
+                    {/* Ícone com profundidade 3D (translateZ) */}
                     <div
-                      className="relative w-14 h-14 rounded-xl flex items-center justify-center mb-5 shadow-lg shadow-green-900/15 group-hover:shadow-green-900/25 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500"
-                      style={{ background: 'linear-gradient(135deg, #6aa521 0%, #2d6208 100%)' }}
+                      className="relative w-14 h-14 rounded-xl flex items-center justify-center mb-5 shadow-lg shadow-green-900/20 group-hover:shadow-green-900/30 transition-all duration-500"
+                      style={{ background: 'linear-gradient(135deg, #6aa521 0%, #2d6208 100%)', transform: 'translateZ(45px)' }}
                     >
-                      <FaShieldAlt className="text-white" size={22} aria-hidden="true" />
-                      <span className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/20" aria-hidden="true" />
+                      <d.icon className="text-white" size={24} aria-hidden="true" />
+                      <span className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/25" aria-hidden="true" />
                     </div>
 
-                    <h3 className="text-[#1a2e0a] font-black text-lg lg:text-xl mb-3 leading-snug group-hover:text-[#3a7d0a] transition-colors duration-300">
+                    <h3
+                      className="relative text-[#1a2e0a] font-black text-lg lg:text-xl mb-3 leading-snug group-hover:text-[#3a7d0a] transition-colors duration-300"
+                      style={{ transform: 'translateZ(25px)' }}
+                    >
                       {d.title}
                     </h3>
-                    <p className="text-gray-500 text-sm leading-relaxed">{d.description}</p>
+                    <p className="relative text-gray-500 text-sm leading-relaxed" style={{ transform: 'translateZ(15px)' }}>
+                      {d.desc}
+                    </p>
                   </div>
-                </Reveal>
-              )
-            })}
+                </TiltCard>
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>

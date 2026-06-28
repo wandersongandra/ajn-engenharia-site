@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react';
 
 export default function Typewriter({ texts, typeSpeed = 60, deleteSpeed = 30, pauseAfter = 2000 }) {
-  // Proteção contra array vazio ou inválido
-  if (!texts?.length) return null;
-
   const [textIndex, setTextIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -17,7 +14,7 @@ export default function Typewriter({ texts, typeSpeed = 60, deleteSpeed = 30, pa
     setIsPaused(false);
   }, [texts]);
 
-  const currentText = texts[textIndex] || '';
+  const currentText = texts?.[textIndex] || '';
 
   useEffect(() => {
     let timeout;
@@ -31,7 +28,7 @@ export default function Typewriter({ texts, typeSpeed = 60, deleteSpeed = 30, pa
     } else if (isDeleting) {
       if (charIndex === 0) {
         // Terminou de apagar, avança para o próximo texto
-        setTextIndex((prev) => (prev + 1) % texts.length);
+        setTextIndex((prev) => (prev + 1) % (texts?.length || 1));
         setIsDeleting(false);
         setIsPaused(false);
       } else {
@@ -59,7 +56,7 @@ export default function Typewriter({ texts, typeSpeed = 60, deleteSpeed = 30, pa
     isDeleting,
     isPaused,
     textIndex,
-    texts.length,
+    texts?.length,
     typeSpeed,
     deleteSpeed,
     pauseAfter,
@@ -68,6 +65,9 @@ export default function Typewriter({ texts, typeSpeed = 60, deleteSpeed = 30, pa
 
   // Texto exibido é DERIVADO do estado, eliminando riscos de dessincronização
   const displayText = currentText.slice(0, charIndex);
+
+  // Proteção contra array vazio — AGORA depois dos hooks (regras de hooks)
+  if (!texts?.length) return null;
 
   return (
     <span role="status" aria-live="polite" className="inline-flex items-center">
