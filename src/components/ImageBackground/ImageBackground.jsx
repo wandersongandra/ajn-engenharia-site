@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 
-// Fotos reais da AJN — alternam no fundo da seção
+// Carrossel de fotos reais da AJN — preenche o container pai (relativo).
 const images = [
   '/images/foto1.jpg',
   '/images/foto2.jpg',
@@ -12,38 +12,41 @@ const images = [
   '/images/foto8.jpg',
 ]
 
-export default function ImageBackground({ children }) {
+export default function ImageBackground() {
   const [current, setCurrent] = useState(0)
 
-  // Avança para a próxima imagem (cíclica)
-  const next = () => {
-    setCurrent((prev) => (prev + 1) % images.length)
-  }
-
   useEffect(() => {
-    const timer = setInterval(next, 2000) // troca a cada 2s
+    const timer = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % images.length)
+    }, 5000)
     return () => clearInterval(timer)
   }, [])
 
   return (
-    <section className="relative w-full min-h-[280px] sm:min-h-[380px] lg:min-h-[560px] overflow-hidden flex items-center justify-center">
-      {/* Carrossel — proporção 16:9 igual às fotos, evitando cortes */}
-      <div className="absolute inset-0">
-        {images.map((src, i) => (
-          <img
+    <div className="absolute inset-0 overflow-hidden">
+      {images.map((src, i) => (
+        <img
+          key={i}
+          src={src}
+          alt="Trabalho da AJN Engenharia"
+          className={`w-full h-full object-cover object-center absolute inset-0 transition-opacity duration-[1600ms] ease-in-out ${
+            i === current ? 'opacity-100 ken-burns' : 'opacity-0'
+          }`}
+        />
+      ))}
+      {/* indicadores */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex gap-2">
+        {images.map((_, i) => (
+          <button
             key={i}
-            src={src}
-            alt=""
-            className={`w-full h-full object-cover object-center absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${i === current ? 'opacity-100' : 'opacity-0'}`}
+            onClick={() => setCurrent(i)}
+            aria-label={`Foto ${i + 1}`}
+            className={`h-1.5 rounded-full transition-all duration-300 ${
+              i === current ? 'w-6 bg-white' : 'w-1.5 bg-white/50'
+            }`}
           />
         ))}
       </div>
-
-      <div className="absolute inset-0 bg-black/70 pointer-events-none" />
-
-      <div className="relative z-10 w-full max-w-4xl mx-auto px-6 text-center">
-        {children}
-      </div>
-    </section>
+    </div>
   )
 }

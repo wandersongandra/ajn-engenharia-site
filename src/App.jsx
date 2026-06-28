@@ -10,6 +10,7 @@ import Blog from './pages/Blog/Blog'
 import BlogPost from './pages/Blog/BlogPost'
 import Contact from './pages/Contact/Contact'
 import SiteMap from './pages/SiteMap/SiteMap'
+import Seo from './components/Seo/Seo'
 
 // Sobe para o topo a cada troca de rota
 function ScrollToTop() {
@@ -34,6 +35,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
+      <Seo />
       <Header />
       <Routes>
         <Route path="/" element={<Home />} />

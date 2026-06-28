@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router-dom'
+
 import {
   FaWhatsapp, FaCalendarAlt, FaClock, FaArrowLeft, FaArrowRight,
   FaHome, FaChevronRight, FaCheckCircle,
@@ -6,15 +7,19 @@ import {
 } from 'react-icons/fa'
 import { getPostBySlug, posts, categoryStyle } from '../../data/blog'
 import { company } from '../../data/company'
+import { fmtDate } from '../../utils/fmtDate'
+import Reveal from '../../components/Reveal/Reveal'
+import TableOfContents from '../../components/TableOfContents/TableOfContents'
+import ShareButtons from '../../components/ShareButtons/ShareButtons'
+import ScrollProgress from '../../components/ScrollProgress/ScrollProgress'
 
 const iconMap = { FaFileAlt, FaUserMd, FaHardHat, FaFire, FaLaptopCode }
 
-const fmtDate = (iso) =>
-  new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
 
 export default function BlogPost() {
   const { slug } = useParams()
   const post = getPostBySlug(slug)
+  const url = window.location.href
 
   if (!post) {
     return (
@@ -32,11 +37,16 @@ export default function BlogPost() {
   const suggestions =
     posts.filter((p) => p.slug !== post.slug && p.category === post.category).slice(0, 3).length
       ? posts.filter((p) => p.slug !== post.slug && p.category === post.category).slice(0, 3)
-      : posts.filter((p) => p.slug !== post.slug).slice(0, 3)
+       : posts.filter((p) => p.slug !== post.slug).slice(0, 3)
+  const currentIndex = posts.findIndex(p => p.slug === slug)
+  const prevPost = currentIndex > 0 ? posts[currentIndex - 1] : null
+  const nextPost = currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null
 
   return (
     <main>
+      <ScrollProgress />
       {/* ══════════ HERO ══════════ */}
+      <Reveal>
       <section className="relative pt-28 sm:pt-36 lg:pt-44 pb-16 sm:pb-20 px-6 overflow-hidden"
         style={{ background: `linear-gradient(135deg, ${s.from} 0%, ${s.to} 100%)` }}>
         <HeroIcon className="absolute right-0 bottom-0 text-white/[0.07] pointer-events-none" size={340} />
@@ -61,9 +71,12 @@ export default function BlogPost() {
           </div>
         </div>
       </section>
+    </Reveal>
 
       {/* ══════════ CORPO ══════════ */}
       <section className="py-16 px-6 bg-white">
+        <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8">
+        <Reveal>
         <article className="max-w-3xl mx-auto">
           <Link to="/blog" className="inline-flex items-center gap-2 text-[#3a7d0a] font-semibold text-sm mb-10 hover:gap-3 transition-all">
             <FaArrowLeft size={12} /> Voltar para o Blog
@@ -77,7 +90,7 @@ export default function BlogPost() {
             {post.content.map((block, i) => {
               if (block.type === 'h2') {
                 return (
-                  <h2 key={i} className="text-2xl font-black text-[#1a2e0a] pt-4 flex items-center gap-3">
+                  <h2 key={i} id={`toc-${i}`} className="text-2xl font-black text-[#1a2e0a] pt-4 flex items-center gap-3">
                     <span className="w-1.5 h-7 bg-[#6aa521] rounded-full" />
                     {block.text}
                   </h2>
@@ -99,6 +112,16 @@ export default function BlogPost() {
             })}
           </div>
 
+          {post.keywords && (
+            <div className="flex flex-wrap gap-2 mt-8">
+              {post.keywords.map((kw) => (
+                <span key={kw} className="bg-green-50 text-[#3a7d0a] text-xs font-semibold px-3 py-1 rounded-full border border-green-200">
+                  {kw}
+                </span>
+              ))}
+            </div>
+          )}
+
           {/* CTA */}
           <div className="mt-12 rounded-3xl p-8 text-center" style={{ background: 'linear-gradient(135deg, #2a3f12 0%, #44621f 100%)' }}>
             <h3 className="text-white font-black text-xl mb-2">Precisa de ajuda com {post.category.toLowerCase()}?</h3>
@@ -111,42 +134,65 @@ export default function BlogPost() {
               <FaWhatsapp size={18} /> Falar pelo WhatsApp
             </a>
           </div>
+            <ShareButtons url={url} title={post.title} />
         </article>
+          <aside className="hidden lg:block w-64">
+            <TableOfContents content={post.content} />
+          </aside>
+        </Reveal>
+        </div>
       </section>
 
       {/* ══════════ RELACIONADOS ══════════ */}
       {suggestions.length > 0 && (
-        <section className="py-16 px-6 bg-[#f5f7fa]">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-2xl font-black text-[#1a2e0a] mb-8">Leia também</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
-              {suggestions.map((p) => (
-                <Link key={p.slug} to={`/blog/${p.slug}`}
-                  className="group relative w-full h-72 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                  <img
-                    src={p.image}
-                    alt={p.title}
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/55 to-black/85 group-hover:from-[#2d6208]/75 group-hover:via-[#3a7d0a]/80 group-hover:to-black/90 transition-colors duration-500" />
-                  <span className="absolute top-3 left-3 bg-white/95 text-xs font-bold px-3 py-1 rounded-full text-[#2d6208] z-10">
-                    {p.category}
-                  </span>
-                  <div className="absolute inset-x-0 bottom-0 p-5">
-                    <h3 className="text-white font-bold text-sm leading-snug mb-2 line-clamp-2"
-                      style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
-                      {p.title}
-                    </h3>
-                    <span className="inline-flex items-center gap-2 text-white/80 font-semibold text-xs group-hover:text-white group-hover:gap-3 transition-all">
-                      Ler artigo <FaArrowRight size={10} />
+        <Reveal>
+          <section className="py-16 px-6 bg-[#f5f7fa]">
+            <div className="max-w-6xl mx-auto">
+              <h2 className="text-2xl font-black text-[#1a2e0a] mb-8">Leia também</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
+                {suggestions.map((p) => (
+                  <Link key={p.slug} to={`/blog/${p.slug}`}
+                    className="group relative w-full h-72 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                    <img
+                      src={p.image}
+                      alt={p.title}
+                      loading="lazy"
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 will-change-transform"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/55 to-black/85 group-hover:from-[#2d6208]/75 group-hover:via-[#3a7d0a]/80 group-hover:to-black/90 transition-colors duration-500" />
+                    <span className="absolute top-3 left-3 bg-white/95 text-xs font-bold px-3 py-1 rounded-full text-[#2d6208] z-10">
+                      {p.category}
                     </span>
-                  </div>
-                </Link>
-              ))}
+                    <div className="absolute inset-x-0 bottom-0 p-5">
+                      <h3 className="text-white font-bold text-sm leading-snug mb-2 line-clamp-2"
+                        style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
+                        {p.title}
+                      </h3>
+                      <span className="inline-flex items-center gap-2 text-white/80 font-semibold text-xs group-hover:text-white group-hover:gap-3 transition-all">
+                        Ler artigo <FaArrowRight size={10} />
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </Reveal>
       )}
+
+          {/* Navegação Prev/Next */}
+          <div className="flex justify-between max-w-6xl mx-auto py-8">
+            {prevPost && (
+              <Link to={`/blog/${prevPost.slug}`} className="flex items-center gap-2 text-[#3a7d0a] font-semibold">
+                <FaArrowLeft size={12} /> {prevPost.title}
+              </Link>
+            )}
+            {nextPost && (
+              <Link to={`/blog/${nextPost.slug}`} className="flex items-center gap-2 text-[#3a7d0a] font-semibold">
+                {nextPost.title} <FaArrowRight size={12} />
+              </Link>
+            )}
+          </div>
     </main>
   )
 }

@@ -9,6 +9,12 @@ export const company = {
   phone: '(31) 98473-4644',
   whatsapp: '5531984734644',
   email: 'faleconosco@ajnengenharia.com.br',
+  // Redes sociais — deixe '' para esconder o ícone (sem links mortos).
+  // Preencha com as URLs reais quando tiver.
+  social: {
+    instagram: '',
+    linkedin: '',
+  },
   address: {
     street: 'Rua Alberto Cintra, 35, sala 601',
     neighborhood: 'Bairro União',

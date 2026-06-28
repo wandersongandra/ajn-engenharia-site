@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { FaChevronRight } from 'react-icons/fa'
 
 /**

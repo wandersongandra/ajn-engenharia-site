@@ -23,14 +23,15 @@ export default function VideoBackground({ children }) {
   }, [current, hasVideo])
 
   return (
-    <div className="relative w-full overflow-hidden bg-black h-[88svh] min-h-[560px] lg:h-[90vh] lg:max-h-[820px]">
+    <div className="relative w-full overflow-hidden bg-black h-[88svh] min-h-[560px] lg:h-auto lg:aspect-[16/9]">
 
       {/* ── Mídia de fundo (object-cover: preenche sem distorcer) ── */}
       {hasVideo ? (
         <video
           ref={videoRef} key={current}
           className="absolute inset-0 w-full h-full object-cover"
-          autoPlay muted playsInline
+          autoPlay muted playsInline preload="auto"
+          poster="/videos/poster.jpg"
           onEnded={() => setCurrent((prev) => (prev + 1) % videos.length)}
         >
           <source src={videos[current]} type="video/mp4" />
@@ -57,17 +58,21 @@ export default function VideoBackground({ children }) {
         </div>
       </div>
 
-      {/* ── Ícones sociais flutuantes (círculos com espaço) ── */}
+      {/* ── Ícones sociais flutuantes (mostra só os configurados) ── */}
       <div className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-3 sm:gap-4">
-        <a href="#" aria-label="LinkedIn"
-          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#0077B5] hover:bg-[#005d8f] flex items-center justify-center text-white shadow-lg hover:scale-110 transition-all">
-          <FaLinkedin size={16} className="sm:w-5 sm:h-5" />
-        </a>
-        <a href="#" aria-label="Instagram"
-          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 transition-all"
-          style={{ background: 'linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)' }}>
-          <FaInstagram size={16} className="sm:w-5 sm:h-5" />
-        </a>
+        {company.social?.linkedin && (
+          <a href={company.social.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#0077B5] hover:bg-[#005d8f] flex items-center justify-center text-white shadow-lg hover:scale-110 transition-all">
+            <FaLinkedin size={16} className="sm:w-5 sm:h-5" />
+          </a>
+        )}
+        {company.social?.instagram && (
+          <a href={company.social.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram"
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 transition-all"
+            style={{ background: 'linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)' }}>
+            <FaInstagram size={16} className="sm:w-5 sm:h-5" />
+          </a>
+        )}
         <a href={`https://wa.me/${company.whatsapp}`} target="_blank" rel="noopener noreferrer"
           aria-label="WhatsApp"
           className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#25D366] hover:bg-[#1db954] flex items-center justify-center text-white shadow-lg hover:scale-110 transition-all">

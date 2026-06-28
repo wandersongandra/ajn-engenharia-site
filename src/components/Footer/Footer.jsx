@@ -55,14 +55,18 @@ export default function Footer() {
           </div>
           {/* Social */}
           <div className="flex gap-3">
-            <a href="#" aria-label="Instagram"
-              className="w-10 h-10 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center hover:bg-[#E1306C] hover:border-[#E1306C] hover:-translate-y-0.5 transition-all">
-              <FaInstagram size={17} />
-            </a>
-            <a href="#" aria-label="LinkedIn"
-              className="w-10 h-10 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center hover:bg-[#0077B5] hover:border-[#0077B5] hover:-translate-y-0.5 transition-all">
-              <FaLinkedin size={17} />
-            </a>
+            {company.social?.instagram && (
+              <a href={company.social.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram"
+                className="w-10 h-10 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center hover:bg-[#E1306C] hover:border-[#E1306C] hover:-translate-y-0.5 transition-all">
+                <FaInstagram size={17} />
+              </a>
+            )}
+            {company.social?.linkedin && (
+              <a href={company.social.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"
+                className="w-10 h-10 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center hover:bg-[#0077B5] hover:border-[#0077B5] hover:-translate-y-0.5 transition-all">
+                <FaLinkedin size={17} />
+              </a>
+            )}
             <a href={`https://wa.me/${company.whatsapp}`} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"
               className="w-10 h-10 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center hover:bg-[#25D366] hover:border-[#25D366] hover:-translate-y-0.5 transition-all">
               <FaWhatsapp size={17} />
@@ -141,9 +145,14 @@ export default function Footer() {
       {/* ── Rodapé final ── */}
       <div className="relative border-t border-white/12">
         <div className="max-w-6xl mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-white/50 text-xs text-center sm:text-left">
-            © {currentYear} AJN Consultoria e Engenharia. Todos os direitos reservados.
-          </p>
+          <div className="flex flex-col items-center sm:items-start gap-1">
+            <p className="text-white/50 text-xs text-center sm:text-left">
+              © {currentYear} AJN Consultoria e Engenharia. Todos os direitos reservados.
+            </p>
+            <p className="text-white/40 text-[11px] text-center sm:text-left">
+              Desenvolvido por <a href="https://gandratecnologia.com.br" target="_blank" rel="noopener noreferrer" className="text-[#a4d65e] hover:text-white transition-colors">Gandra Tecnologia</a>
+            </p>
+          </div>
           <a
             href="https://maps.google.com/?q=Rua+Alberto+Cintra,+35,+União,+Belo+Horizonte,+MG"
             target="_blank" rel="noopener noreferrer"
