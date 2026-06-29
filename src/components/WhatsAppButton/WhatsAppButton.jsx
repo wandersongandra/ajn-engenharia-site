@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
-import { FaWhatsapp } from 'react-icons/fa'
+import Lottie from "lottie-react"
+import pulseAnimation from "../../assets/lottie/whatsapp-pulse.json"
 import { company } from '../../data/company'
 
 export default function WhatsAppButton() {
@@ -42,7 +43,7 @@ export default function WhatsAppButton() {
                  focus:outline-none focus-visible:ring-4 focus-visible:ring-[#25D366]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white
                  transition-all duration-300 ease-out"
     >
-      <FaWhatsapp size={26} className="flex-shrink-0 transition-transform duration-300 group-hover:rotate-12" />
+      <Lottie animationData={pulseAnimation} loop={true} style={{ width: 26, height: 26 }} className="flex-shrink-0" />
       <span className="text-sm sm:text-base font-semibold tracking-wide whitespace-nowrap hidden sm:inline">
         Fale Conosco
       </span>

@@ -74,7 +74,7 @@ export default function VideoBackground({ children }) {
           ref={videoRef}
           key={current} // Remonta o vídeo para garantir transição limpa e reset do buffer
           className="absolute inset-0 w-full h-full object-cover"
-          autoPlay muted playsInline preload="auto"
+          autoPlay muted playsInline preload="metadata"
           poster="/videos/poster.jpg"
           onEnded={() => setCurrent((prev) => (prev + 1) % videos.length)}
           aria-hidden="true" // Esconde de leitores de tela
