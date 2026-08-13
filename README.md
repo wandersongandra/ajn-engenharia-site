@@ -1,16 +1,77 @@
-# React + Vite
+# AJN Engenharia — Site Institucional
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Aplicação institucional da **AJN Engenharia**, desenvolvida com React e Vite para apresentar serviços, conteúdo técnico, contato e presença digital da empresa em uma experiência moderna e responsiva.
 
-Currently, two official plugins are available:
+O projeto combina navegação por rotas, SEO por página, conteúdo institucional, blog e recursos visuais com **Three.js**, **React Three Fiber**, **Drei**, **Lottie** e **tsParticles**.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Páginas e rotas
 
-## React Compiler
+A aplicação possui as seguintes rotas principais:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- `/` — Home;
+- `/servicos` — listagem de serviços;
+- `/servicos/:slug` — detalhe de serviço;
+- `/blog` — conteúdo e artigos;
+- `/blog/:slug` — artigo individual;
+- `/contato` — contato;
+- `/mapa-do-site` — mapa do site;
+- rota fallback com página `404`.
 
-## Expanding the Oxlint configuration
+Também fazem parte da experiência global:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+- header e footer reutilizáveis;
+- botão de contato via WhatsApp;
+- gerenciamento de SEO;
+- retorno automático ao topo em trocas de rota.
+
+## Stack
+
+| Camada | Tecnologia |
+|---|---|
+| UI | React 19 |
+| Build tool | Vite 8 |
+| Roteamento | React Router 7 |
+| Estilos | Tailwind CSS 4 |
+| 3D | Three.js + React Three Fiber + Drei |
+| Motion / efeitos | Lottie + tsParticles |
+| Qualidade | Oxlint |
+
+## Desenvolvimento local
+
+```bash
+npm install
+npm run dev
+```
+
+## Build
+
+```bash
+npm run build
+```
+
+O comando de build executa o Vite e, em seguida, o script de prerenderização definido em `scripts/prerender.mjs`.
+
+## Validação
+
+```bash
+npm run lint
+```
+
+## Preview local
+
+```bash
+npm run preview
+```
+
+## Estrutura de navegação
+
+```text
+src/
+├── components/   componentes reutilizáveis e elementos globais
+├── pages/        páginas da aplicação
+└── App.jsx       roteamento e composição principal
+```
+
+---
+
+Projeto desenvolvido para a presença digital da **AJN Engenharia**.
